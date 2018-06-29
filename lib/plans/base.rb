@@ -36,6 +36,16 @@ module Plans
       @logger.debug "Total is #{@total}"
     end
 
+    def holiday?(date)
+      return false
+      (date.month == 1 && date.day == 1) || # New Years
+      (date.month == 7 && date.day == 4) || # July 4
+      (date.month == 12 && date.day == 25)  # Christmas
+      # last monday of May, Memorial Day
+      # first monday of Sept, Labor Day
+      # fourth thursday of November, Thanksgiving
+    end
+
     def demand_usage(date, hour, kwh)
       0
     end
