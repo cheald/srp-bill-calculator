@@ -37,7 +37,6 @@ module Plans
     end
 
     def holiday?(date)
-      return false
       (date.month == 1 && date.day == 1) || # New Years
       (date.month == 7 && date.day == 4) || # July 4
       (date.month == 12 && date.day == 25)  # Christmas
