@@ -2,7 +2,7 @@ module Plans
   module SRP
     class Solar < Base
       def demand_usage(date, hour, kwh)
-        kwh
+        kwh / 2.0
       end
 
       def demand_rate(date, hour)

@@ -7,7 +7,7 @@ module Plans
         when 0, 6
           0
         else
-          (15..18).cover?(hour) ? 1 : 0
+          (15...18).cover?(hour) ? 1 : 0
         end
       end
 
@@ -19,7 +19,7 @@ module Plans
           when 0
             0.0758
           when 1
-            0.01215
+            0.1215
           else
             raise "Bad level"
           end
