@@ -1,12 +1,14 @@
 module Plans
   class Base
-    def initialize
+    attr_reader :total
+    def initialize(logger)
+      @logger = logger
       @total = 0
     end
 
     def add(date, hour, kwh)
       v = cost date, hour, kwh
-      puts format("%20s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
+      @logger.debug format("%20s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
     end
 

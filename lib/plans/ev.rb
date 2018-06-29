@@ -32,6 +32,8 @@ module Plans
           0.0757
         when 2
           0.1020
+        else
+          raise "Bad level"
         end
       when 5..6, 9..10
         case l
@@ -41,6 +43,8 @@ module Plans
           0.0765
         when 2
           0.1946
+        else
+          raise "Bad level"
         end
       when 7..8
         case l
@@ -50,6 +54,8 @@ module Plans
           0.0770
         when 2
           0.2215
+        else
+          raise "Bad level"
         end
       end
     end

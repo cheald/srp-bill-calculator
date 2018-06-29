@@ -10,6 +10,6 @@ To use it:
 
 Once you have your CSV, pass it to the tool:
 
-    ruby power.rb 082-174-000-Hourly-20170620-20180627.csv
+    ruby power.rb -f 082-174-000-Hourly-20170620-20180627.csv
 
 And your projections per plan will be computed and displayed.
