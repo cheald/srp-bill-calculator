@@ -1,4 +1,6 @@
-This is a tool to estimate what your SRP power costs would be on each of their different plans.
+# SRP Bill calculator
+
+This is a tool to estimate what your SRP power costs would be on each of their different plans. I wrote it to determine which of SRP's plans would be most beneficial for my home.
 
 To use it:
 
