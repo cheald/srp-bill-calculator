@@ -27,7 +27,7 @@ end
 
 plans = [
   Plans::EZThree.new(logger),
-  Plans::EV.new(logger),
+  Plans::ElectricVehicle.new(logger),
   Plans::TimeOfUse.new(logger),
   Plans::Basic.new(logger),
   Plans::MPower.new(logger),

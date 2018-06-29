@@ -1,5 +1,5 @@
 module Plans
-  class EV < Base
+  class ElectricVehicle < Base
     def level(date, hour)
       case date.wday
       when 0, 6
