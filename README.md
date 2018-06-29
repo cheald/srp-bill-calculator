@@ -12,6 +12,8 @@ This is a tool to estimate what your SRP power costs would be on an hour-by-hour
 4. Change your Start Date and End Date to the desired range you want to project over
 5. Click the "Export to Excel" button.
 
+![](doc/Screenshot_20180629_020254.png)
+
 Once you have your CSV, pass it to the tool:
 
     ruby power.rb -f 082-174-000-Hourly-20170620-20180627.csv
