@@ -1,8 +1,11 @@
 module Plans
   class Basic < Base
     def add(date, hour, kwh)
-      d = Date.strptime date, "%m/%d/%Y"
-      @usage = 0 if d == 1 || @usage.nil?
+      d = Date.strptime(date, "%m/%d/%Y").day
+      h = Time.parse(hour).hour
+      if (d == 1 && h == 0) || @usage.nil?
+        @usage = 0
+      end
       @usage += kwh.to_f
       super
     end
