@@ -2,7 +2,7 @@
 
 This is a tool to estimate what your SRP power costs would be on an hour-by-hour basis, for each of SRP's different plans. I wrote it to determine which of SRP's plans would be least expensive for my family.
 
-![](doc/Screenshot_20180629_013435.png)
+![](doc/Screenshot_20180629_020116.png)
 
 ## Usage
 
