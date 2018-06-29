@@ -2,7 +2,9 @@
 
 This is a tool to estimate what your SRP power costs would be on each of their different plans. I wrote it to determine which of SRP's plans would be most beneficial for my home.
 
-To use it:
+![](doc/Screenshot_20180629_013435.png)
+
+## Usage
 
 1. Go to your account usage page at https://myaccount.srpnet.com/MyAccount/usage
 2. Find the "Report Options" box
