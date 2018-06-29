@@ -2,6 +2,7 @@ module Plans
   module SRP
     class EZThree < Base
       def level(date, hour)
+        return 0 if holiday?(date)
         case date.wday
         when 0, 6
           0
