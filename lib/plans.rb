@@ -4,4 +4,5 @@ module Plans
   require_relative "plans/time_of_use"
   require_relative "plans/ev"
   require_relative "plans/basic"
+  require_relative "plans/m_power"
 end

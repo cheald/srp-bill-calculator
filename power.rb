@@ -30,6 +30,7 @@ plans = [
   Plans::EV.new(logger),
   Plans::TimeOfUse.new(logger),
   Plans::Basic.new(logger),
+  Plans::MPower.new(logger),
 ]
 
 logger.info "Computing..."
