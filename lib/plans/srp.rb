@@ -5,5 +5,6 @@ module Plans
     require_relative "srp/ev"
     require_relative "srp/basic"
     require_relative "srp/m_power"
+    require_relative "srp/solar"
   end
 end

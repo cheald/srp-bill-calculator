@@ -37,6 +37,7 @@ plans = case options[:provider]
             Plans::SRP::TimeOfUse.new(logger),
             Plans::SRP::Basic.new(logger),
             Plans::SRP::MPower.new(logger),
+          # Plans::SRP::Solar.new(logger),
           ]
         else
           [

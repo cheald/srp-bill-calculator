@@ -1,6 +1,38 @@
 module Plans
   module SRP
     class Solar < Base
+      def demand_usage(date, hour, kwh)
+        kwh
+      end
+
+      def demand_rate(date, hour)
+        a = nil
+        b = nil
+        c = nil
+        case date.month
+        when 1..4, 11..12
+          a = 3.55
+          b = 5.68
+          c = 9.74
+        when 5..6, 9..10
+          a = 8.03
+          b = 14.63
+          c = 27.77
+        else
+          a = 9.59
+          b = 17.82
+          c = 34.19
+        end
+
+        if @peak > 10
+          (a * 3) + (b * 7) + (c * (@peak - 10))
+        elsif @peak > 3
+          (a * 3) + (b * (@peak - 7))
+        else
+          a * 3
+        end
+      end
+
       def level(date, hour)
         case date.wday
         when 0, 6
