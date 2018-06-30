@@ -1,6 +1,10 @@
 module Plans
   module SRP
     class TimeOfUse < Base
+      def fixed_charges
+        20
+      end
+
       def level(date, hour)
         return 0 if holiday?(date)
         case date.wday

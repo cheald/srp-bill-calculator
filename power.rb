@@ -29,25 +29,13 @@ else
   logger.level = Logger::INFO
 end
 
-plans = case options[:provider]
-        when "srp"
-          [
-            Plans::SRP::EZThree.new(logger),
-            Plans::SRP::ElectricVehicle.new(logger),
-            Plans::SRP::TimeOfUse.new(logger),
-            Plans::SRP::Basic.new(logger),
-            Plans::SRP::MPower.new(logger),
-          # Plans::SRP::Solar.new(logger),
-          ]
-        else
-          [
-            Plans::APS::SaverChoice.new(logger),
-            Plans::APS::SaverChoicePlus.new(logger),
-            Plans::APS::SaverChoiceMax.new(logger),
-          ]
-        end
-
-logger.info "Computing..."
+root = case options[:provider]
+       when "srp"
+         Plans::SRP
+       else
+         Plans::APS
+       end
+plans = root.constants.map { |c| root.const_get(c).new(logger) }
 
 CSV.open(options[:csv], headers: true) do |csv|
   csv.each do |row|
@@ -63,6 +51,15 @@ end
 sorted = plans.sort_by(&:total)
 best = sorted.shift
 worst = sorted.pop
+
+puts <<-EOF
+
+NOTE: The following projections include fixed fees (such as monthly service charges)
+and energy costs, but do not include taxes or extra costs such as SRP Earthwise. These
+projections may not match your actual bill as a result, but should accurately reflect
+the relative cost of the programs.
+
+EOF
 
 puts colorize_string best, 32
 sorted.each do |plan|

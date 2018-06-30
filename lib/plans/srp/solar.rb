@@ -1,6 +1,19 @@
 module Plans
   module SRP
     class Solar < Base
+      def display_name
+        "SRP::Customer Generation/E27"
+      end
+
+      def notes
+        "Customers with PV arrays may only use this plan."
+      end
+
+      def fixed_charges
+        32.44
+      end
+
+      # SRP demand charges are based on half-hour demand. We only have kWh to work with.
       def demand_usage(date, hour, kwh)
         kwh / 2.0
       end

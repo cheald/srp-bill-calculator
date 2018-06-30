@@ -1,3 +1,5 @@
+require_relative "./base"
+
 module Plans
   module SRP
     require_relative "srp/ezthree"

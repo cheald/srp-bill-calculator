@@ -1,6 +1,14 @@
 module Plans
   module SRP
     class ElectricVehicle < Base
+      def notes
+        "Only available to customers with a plug-in battery or hybrid vehicle."
+      end
+
+      def fixed_charges
+        20
+      end
+
       def level(date, hour)
         return 0 if holiday?(date)
         case date.wday

@@ -1,6 +1,10 @@
 module Plans
   module APS
     class SaverChoice < Base
+      def fixed_charges
+        13
+      end
+
       def level(date, hour)
         case date.wday
         when 0, 6

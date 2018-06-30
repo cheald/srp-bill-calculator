@@ -1,6 +1,10 @@
 module Plans
   module SRP
     class Basic < Base
+      def fixed_charges
+        20
+      end
+
       def level(date, hour)
         case date.month
         when 1..4, 11..12

@@ -1,6 +1,10 @@
 module Plans
   module APS
     class SaverChoiceMax < Base
+      def fixed_charges
+        13
+      end
+
       def demand_usage(date, hour, kwh)
         case date.wday
         when 1..5

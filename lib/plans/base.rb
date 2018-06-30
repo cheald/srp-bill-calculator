@@ -1,6 +1,6 @@
 module Plans
   class Base
-    attr_reader :monthly_usage
+    attr_reader :monthly_usage, :total_kwh
 
     def initialize(logger)
       @logger = logger
@@ -11,9 +11,12 @@ module Plans
       @demand_total ||= 0
       @monthly_usage ||= 0
       @peak ||= 0
+      @total_kwh ||= 0
 
       d = Date.strptime(date, "%m/%d/%Y")
       h = Time.parse(hour).hour
+
+      @first_date ||= d
 
       @last_date = d
       @last_hour = h
@@ -29,6 +32,7 @@ module Plans
       k = demand_usage(d, h, kwh.to_f)
       @peak = k if k > @peak
       @monthly_usage += k
+      @total_kwh += kwh.to_f
 
       v = cost date, hour, kwh
       @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
@@ -54,7 +58,17 @@ module Plans
     end
 
     def total
-      @total + total_demand_charge
+      @total + total_demand_charge + total_fixed_charges
+    end
+
+    def billing_periods
+      billing_periods = (@last_date - @first_date).to_i / (365.25 / 12.0)
+    end
+
+    # Compute the fixed charges (ie, connection fees) for the whole period
+    # This uses a float to estimate an amortized cost for partial billing periods
+    def total_fixed_charges
+      fixed_charges * billing_periods
     end
 
     def total_demand_charge
@@ -68,8 +82,19 @@ module Plans
       rate(date, hour) * kwh.to_f
     end
 
+    def display_name
+      self.class.to_s.gsub("Plans::", "")
+    end
+
+    def colorize_string(string, code)
+      "\e[0;#{code};49m#{string}\e[0m"
+    end
+
+    def notes
+    end
+
     def to_s
-      format "%-30s\t$%2.2f", self.class.to_s, total
+      format "%-30s\t$%2.2f\t%s", display_name, total, colorize_string(notes, 37)
     end
   end
 end
