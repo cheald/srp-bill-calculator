@@ -61,6 +61,10 @@ module Plans
       @total + total_demand_charge + total_fixed_charges
     end
 
+    def energy_total
+      @total + total_demand_charge
+    end
+
     def billing_periods
       billing_periods = (@last_date - @first_date).to_i / (365.25 / 12.0)
     end
@@ -93,8 +97,13 @@ module Plans
     def notes
     end
 
+    def self.print_header
+      puts colorize_string format("%-30s\tTotal\t\tEnergy\t\tFees\t\tNotes", "Plan Name"), 94
+      puts "-" * 71
+    end
+
     def to_s
-      format "%-30s\t$%2.2f\t%s", display_name, total, colorize_string(notes, 37)
+      format "%-30s\t$%2.2f\t$%2.2f\t$%2.2f\t\t%s", display_name, total, energy_total, total_fixed_charges, colorize_string(notes, 37)
     end
   end
 end

@@ -61,8 +61,10 @@ the relative cost of the programs.
 
 EOF
 
+Plans::Base.print_header
 puts colorize_string best, 32
 sorted.each do |plan|
   puts colorize_string plan, 33
 end
 puts colorize_string worst, 31 if worst
+puts ""
