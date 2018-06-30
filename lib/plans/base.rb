@@ -1,10 +1,19 @@
+require "time"
+
 module Plans
   class Base
     attr_reader :monthly_usage, :total_kwh
 
-    def initialize(logger)
+    def initialize(logger, demand_schedule)
       @logger = logger
       @total = 0
+      @demand_schedule = demand_schedule
+    end
+
+    def demand_for_period(year, month)
+      return @peak unless @demand_schedule
+      key = Date.new(year, month, 1).strftime("%Y-%m")
+      @demand_schedule.fetch(key, @peak)
     end
 
     def add(date, hour, kwh)
@@ -15,14 +24,16 @@ module Plans
 
       d = Date.strptime(date, "%m/%d/%Y")
       h = Time.parse(hour).hour
+      m = Time.parse(hour).min
 
       @first_date ||= d
 
       @last_date = d
       @last_hour = h
 
-      if (d.day == 1 && h == 0)
-        demand_for_month = @peak * demand_rate(d, h)
+      if (d.day == 1 && h == 0 && m == 0)
+        peak = demand_for_period(d.year, d.month)
+        demand_for_month = peak * demand_rate(d, h)
         @demand_total += demand_for_month
         @logger.debug "Demand charge for month: #{@peak} kW @ #{demand_rate(d, h)} = #{demand_for_month}"
         @logger.debug "Total demand charges so far: #{@demand_total}"
@@ -35,9 +46,9 @@ module Plans
       @total_kwh += kwh.to_f
 
       v = cost date, hour, kwh
-      @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
+      # @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
-      @logger.debug "Total is #{@total}"
+      # @logger.debug "Total is #{@total}"
     end
 
     def holiday?(date)
@@ -76,7 +87,8 @@ module Plans
     end
 
     def total_demand_charge
-      @demand_total + (@peak * demand_rate(@last_date, @last_hour))
+      peak = demand_for_period(@last_date.year, @last_date.month)
+      @demand_total + (peak * demand_rate(@last_date, @last_hour))
     end
 
     def cost(date, hour, kwh)
@@ -98,12 +110,24 @@ module Plans
     end
 
     def self.print_header
-      puts colorize_string format("%-30s\tTotal\t\tEnergy\t\tFees\t\tNotes", "Plan Name"), 94
-      puts "-" * 71
+      puts colorize_string(format("%-30s\t%8s\t%8s\t%8s\t%8s\t%-8s",
+                                  "Plan Name",
+                                  "Total",
+                                  "Energy",
+                                  "Demand",
+                                  "Fees",
+                                  "Notes"), 94)
+      puts "-" * 101
     end
 
     def to_s
-      format "%-30s\t$%2.2f\t$%2.2f\t$%2.2f\t\t%s", display_name, total, energy_total, total_fixed_charges, colorize_string(notes, 37)
+      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%s",
+        display_name,
+        format("$%2.2f", total),
+        format("$%2.2f", @total),
+        format("$%2.2f", total_demand_charge),
+        format("$%2.2f", total_fixed_charges),
+        colorize_string(notes, 37)
     end
   end
 end

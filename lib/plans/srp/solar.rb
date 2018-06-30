@@ -6,7 +6,9 @@ module Plans
       end
 
       def notes
-        "Customers with PV arrays may only use this plan."
+        n = "Customers with PV arrays may only use this plan."
+        n += " Demand charges are estimated and may be inaccurate." unless @demand_schedule
+        n
       end
 
       def fixed_charges
@@ -15,7 +17,11 @@ module Plans
 
       # SRP demand charges are based on half-hour demand. We only have kWh to work with.
       def demand_usage(date, hour, kwh)
-        kwh / 2.0
+        if @demand_schedule
+          demand_for_period(date.year, date.month)
+        else
+          kwh / 2.0
+        end
       end
 
       def demand_rate(date, hour)
@@ -37,13 +43,15 @@ module Plans
           c = 34.19
         end
 
-        if @peak > 10
-          (a * 3) + (b * 7) + (c * (@peak - 10))
-        elsif @peak > 3
-          (a * 3) + (b * (@peak - 7))
-        else
-          a * 3
-        end
+        peak_demand = demand_for_period(date.year, date.month)
+        r = if peak_demand > 10
+              (a * 3) + (b * 7) + (c * (peak_demand - 10))
+            elsif peak_demand > 3
+              (a * 3) + (b * (peak_demand - 3))
+            else
+              a * peak_demand
+            end
+        r / peak_demand
       end
 
       def level(date, hour)

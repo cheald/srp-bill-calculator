@@ -21,6 +21,10 @@ OptionParser.new do |opts|
   opts.on("-p", "--provider (aps|srp)", "Electric provider's rate plans to use") do |v|
     options[:provider] = v
   end
+
+  opts.on("-m", "--demand csv", "Provide an additional demand CSV, available to customers on the SRP E27 plan") do |v|
+    options[:demand_schedule] = v
+  end
 end.parse!
 
 if options[:debug]
@@ -35,7 +39,19 @@ root = case options[:provider]
        else
          Plans::APS
        end
-plans = root.constants.map { |c| root.const_get(c).new(logger) }
+
+demand_schedule = nil
+if options[:demand_schedule]
+  demand_schedule = {}
+  CSV.open(options[:demand_schedule], headers: true).each do |row|
+    key = Date.strptime(row[0], "%m/%d/%Y").strftime("%Y-%m")
+    demand = row[2].to_f
+    demand_schedule[key] ||= demand
+    demand_schedule[key] = demand if demand > demand_schedule[key]
+  end
+end
+
+plans = root.constants.map { |c| root.const_get(c).new(logger, demand_schedule) }
 
 CSV.open(options[:csv], headers: true) do |csv|
   csv.each do |row|
