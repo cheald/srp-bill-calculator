@@ -19,12 +19,16 @@ module Plans
     def add(date, hour, kwh)
       @demand_total ||= 0
       @monthly_usage ||= 0
+      @usage_by_month ||= {}
       @peak ||= 0
       @total_kwh ||= 0
 
-      d = Date.strptime(date, "%m/%d/%Y")
+      d = date
       h = Time.parse(hour).hour
       m = Time.parse(hour).min
+
+      @usage_by_month[d.strftime("%Y-%m")] ||= 0
+      @usage_by_month[d.strftime("%Y-%m")] += kwh.to_f
 
       @first_date ||= d
       @last_date = d
@@ -91,7 +95,6 @@ module Plans
     end
 
     def cost(date, hour, kwh)
-      date = Date.strptime date, "%m/%d/%Y"
       kwh = kwh.to_f
       hour = Time.parse(hour).hour
       rate(date, hour) * kwh.to_f
