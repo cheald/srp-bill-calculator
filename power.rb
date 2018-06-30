@@ -60,7 +60,7 @@ CSV.open(options[:csv], headers: true) do |csv|
   end
   arr.select(&:first).sort_by(&:first).each do |row|
     logger.debug "-" * 79
-    plans.each { |plan| plan.add(row[0], row[1], row[2]) }
+    plans.each { |plan| plan.add(row[0], Time.parse(row[1]), row[2].to_f) }
   end
 end
 

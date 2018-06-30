@@ -24,11 +24,11 @@ module Plans
       @total_kwh ||= 0
 
       d = date
-      h = Time.parse(hour).hour
-      m = Time.parse(hour).min
+      h = hour.hour
+      m = hour.min
 
       @usage_by_month[d.strftime("%Y-%m")] ||= 0
-      @usage_by_month[d.strftime("%Y-%m")] += kwh.to_f
+      @usage_by_month[d.strftime("%Y-%m")] += kwh
 
       @first_date ||= d
       @last_date = d
@@ -43,10 +43,10 @@ module Plans
         @peak = 0
         @monthly_usage = 0
       end
-      k = demand_usage(d, h, kwh.to_f)
+      k = demand_usage(d, h, kwh)
       @peak = k if k > @peak
       @monthly_usage += k
-      @total_kwh += kwh.to_f
+      @total_kwh += kwh
 
       v = cost date, hour, kwh
       # @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
@@ -94,10 +94,9 @@ module Plans
       @demand_total + (peak * demand_rate(@last_date, @last_hour))
     end
 
-    def cost(date, hour, kwh)
-      kwh = kwh.to_f
-      hour = Time.parse(hour).hour
-      rate(date, hour) * kwh.to_f
+    def cost(date, time, kwh)
+      kwh = kwh
+      rate(date, time.hour) * kwh
     end
 
     def display_name
