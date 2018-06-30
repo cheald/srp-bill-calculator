@@ -54,7 +54,8 @@ end
 plans = root.constants.map { |c| root.const_get(c).new(logger, demand_schedule) }
 
 CSV.open(options[:csv], headers: true) do |csv|
-  csv.each do |row|
+  rows = csv.select { |row| Date.parse(row[0]) rescue nil }
+  rows.sort_by { |row| Date.parse(row[0]) }.each do |row|
     logger.debug "-" * 79
     plans.each { |plan| plan.add(row[0], row[1], row[2]) }
   end
