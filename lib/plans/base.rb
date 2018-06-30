@@ -27,7 +27,6 @@ module Plans
       m = Time.parse(hour).min
 
       @first_date ||= d
-
       @last_date = d
       @last_hour = h
 
