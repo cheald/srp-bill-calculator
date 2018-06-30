@@ -44,6 +44,8 @@ module Plans
         end
 
         peak_demand = demand_for_period(date.year, date.month)
+        return 0 if peak_demand == 0
+
         r = if peak_demand > 10
               (a * 3) + (b * 7) + (c * (peak_demand - 10))
             elsif peak_demand > 3
