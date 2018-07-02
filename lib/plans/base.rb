@@ -50,9 +50,9 @@ module Plans
       @total_kwh += kwh
 
       v = cost date, hour, kwh
-      # @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
+      @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
-      # @logger.debug "Total is #{@total}"
+      @logger.debug "Total is #{@total}"
     end
 
     def holiday?(date)

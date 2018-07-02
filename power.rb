@@ -4,18 +4,21 @@ require "optparse"
 require "logger"
 require_relative "./lib/plans"
 
-logger = Logger.new $stderr
+def colorize_string(string, code)
+  "\e[0;#{code};49m#{string}\e[0m"
+end
 
+logger = Logger.new $stderr
 options = { provider: "srp" }
 
-OptionParser.new do |opts|
+parser = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
 
   opts.on("-d", "--debug", "Print debug information") do |v|
     options[:debug] = v
   end
 
-  opts.on("-f", "--file csv", "CSV to parse") do |v|
+  opts.on("-f", "--file CSV", "CSV to parse") do |v|
     options[:csv] = v
   end
 
@@ -23,14 +26,24 @@ OptionParser.new do |opts|
     options[:provider] = v
   end
 
-  opts.on("-m", "--demand csv", "Provide an additional demand CSV, available to customers on the SRP E27 plan") do |v|
+  opts.on("-m", "--demand CSV", "Provide an additional demand CSV, available to customers on the SRP E27 plan") do |v|
     options[:demand_schedule] = v
   end
 
-  opts.on("--srp-ez3-start-hour HOUR", %w(14 15 16), "Specify the starting hour as 24h time for SRP's EZ3 plan, for legacy customers. Valid options are: [14, 15, 16]") do |v|
+  opts.on("--srp-ez3-start-hour [14,15,16]", %w(14 15 16), "Specify the starting hour as 24h time for SRP's EZ3 plan, for legacy customers.") do |v|
     options[:srp_ez3_start_hour] = v.to_i
   end
-end.parse!
+end
+
+begin
+  parser.parse!
+rescue OptionParser::InvalidArgument => e
+  puts colorize_string "Invalid option: #{e.message}", 31
+  puts ""
+  puts parser.help
+  puts ""
+  exit
+end
 
 if options[:debug]
   logger.level = Logger::DEBUG
@@ -67,10 +80,6 @@ CSV.open(options[:csv], headers: true) do |csv|
     logger.debug "-" * 79
     plans.each { |plan| plan.add(row[0], Time.parse(row[1]), row[2].to_f) }
   end
-end
-
-def colorize_string(string, code)
-  "\e[0;#{code};49m#{string}\e[0m"
 end
 
 sorted = plans.sort_by(&:total)
