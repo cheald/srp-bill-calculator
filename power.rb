@@ -6,7 +6,8 @@ require_relative "./lib/plans"
 
 logger = Logger.new $stderr
 
-options = {provider: "srp"}
+options = { provider: "srp" }
+
 OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
 
@@ -24,6 +25,10 @@ OptionParser.new do |opts|
 
   opts.on("-m", "--demand csv", "Provide an additional demand CSV, available to customers on the SRP E27 plan") do |v|
     options[:demand_schedule] = v
+  end
+
+  opts.on("--srp-ez3-start-hour HOUR", %w(14 15 16), "Specify the starting hour as 24h time for SRP's EZ3 plan, for legacy customers. Valid options are: [14, 15, 16]") do |v|
+    options[:srp_ez3_start_hour] = v.to_i
   end
 end.parse!
 
@@ -51,7 +56,7 @@ if options[:demand_schedule]
   end
 end
 
-plans = root.constants.map { |c| root.const_get(c).new(logger, demand_schedule) }
+plans = root.constants.map { |c| root.const_get(c).new(logger, demand_schedule, options) }
 
 CSV.open(options[:csv], headers: true) do |csv|
   arr = csv.to_a

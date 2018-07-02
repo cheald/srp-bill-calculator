@@ -4,10 +4,11 @@ module Plans
   class Base
     attr_reader :monthly_usage, :total_kwh
 
-    def initialize(logger, demand_schedule)
+    def initialize(logger, demand_schedule, options)
       @logger = logger
       @total = 0
       @demand_schedule = demand_schedule
+      @options = options
     end
 
     def demand_for_period(year, month)

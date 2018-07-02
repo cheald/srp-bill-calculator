@@ -11,7 +11,8 @@ module Plans
         when 0, 6
           0
         else
-          (15...18).cover?(hour) ? 1 : 0
+          start = @options.fetch(:srp_ez3_start_hour, "15").to_i
+          (start...start+3).cover?(hour) ? 1 : 0
         end
       end
 
