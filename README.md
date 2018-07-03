@@ -18,7 +18,20 @@ This is a tool to estimate what your power costs would be on an hour-by-hour bas
 
 ### APS
 
-(I need an APS customer to provide this)
+1. Log in to your APS account
+2. Select my energy > daily & hourly usage.
+
+   ![](doc/aps/step_1.png)
+
+3. Select the "detailed energy usage" tab
+
+   ![](doc/aps/step_2.png)
+
+4. At the very bottom of detailed energy usage, you have the option to export. The default range is a month. Change the date range to a year, and click "download"
+
+   ![](doc/aps/step_3.png)
+
+5. After exporting your .xslx, open it in Excel, LibreOffice, or Google Docs, and save it as a CSV
 
 ### Running the tool
 
