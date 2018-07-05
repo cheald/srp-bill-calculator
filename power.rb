@@ -2,6 +2,7 @@ require "csv"
 require "time"
 require "optparse"
 require "logger"
+require "awesome_print"
 require_relative "./lib/plans"
 
 def colorize_string(string, code)
@@ -9,7 +10,7 @@ def colorize_string(string, code)
 end
 
 logger = Logger.new $stderr
-options = { provider: "srp" }
+options = {provider: "srp"}
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
@@ -32,6 +33,14 @@ parser = OptionParser.new do |opts|
 
   opts.on("--srp-ez3-start-hour [14,15,16]", %w(14 15 16), "Specify the starting hour as 24h time for SRP's EZ3 plan, for legacy customers.") do |v|
     options[:srp_ez3_start_hour] = v.to_i
+  end
+
+  opts.on("--solar-offset KILOWATTS", "Estimate your bill with a PV array offsetting this many kW of generation") do |v|
+    options[:solar_offset] = v.to_f
+  end
+
+  opts.on("--solar-tmy3 CSV", "CSV of precalculated hourly horizontal irradience values") do |v|
+    options[:tmy3_data] = CSV.read(v).map { |r| [r[0].to_i, r.slice(1..-1).map(&:to_f)] }.to_h
   end
 end
 

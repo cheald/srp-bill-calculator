@@ -18,6 +18,9 @@ module Plans
     end
 
     def add(date, hour, kwh)
+      orig_kwh = kwh
+      kwh = pv_offset(date, hour.hour, kwh)
+      @logger.debug "Net kWh consumption is #{kwh} (#{orig_kwh} orig)"
       @demand_total ||= 0
       @monthly_usage ||= 0
       @usage_by_month ||= {}
@@ -45,14 +48,35 @@ module Plans
         @monthly_usage = 0
       end
       k = demand_usage(d, h, kwh)
+      @logger.debug "Demand for this period is #{k} on #{kwh} used (#{orig_kwh})"
       @peak = k if k > @peak
       @monthly_usage += k
       @total_kwh += kwh
 
       v = cost date, hour, kwh
-      @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
+      # @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
-      @logger.debug "Total is #{@total}"
+      # @logger.debug "Total is #{@total}"
+    end
+
+    def pv_offset(date, hour, kwh)
+      kwh
+    end
+
+    def solar_generation(date, hour)
+      rad = solar_irradience(date.yday, hour) / 1000
+      @logger.debug format("System is offsetting %2.3f%% of %2.1f (%2.2f)", rad * 100, @options[:solar_offset], @options[:solar_offset] * rad)
+      @options[:solar_offset] * rad
+    end
+
+    def solar_irradience(d, h)
+      r = @options[:tmy3_data][d]
+      14.times do |i|
+        break if r
+        r ||= @options[:tmy3_data][d - i]
+        r ||= @options[:tmy3_data][d + i]
+      end
+      r[h]
     end
 
     def holiday?(date)
@@ -118,17 +142,19 @@ module Plans
                                   "Energy",
                                   "Demand",
                                   "Fees",
+                                  "Avg cost/kWh",
                                   "Notes"), 94)
       puts "-" * 101
     end
 
     def to_s
-      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%s",
+      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%s",
         display_name,
         format("$%2.2f", total),
         format("$%2.2f", @total),
         format("$%2.2f", total_demand_charge),
         format("$%2.2f", total_fixed_charges),
+        format("$%2.2f", total / @total_kwh),
         colorize_string(notes, 37)
     end
   end

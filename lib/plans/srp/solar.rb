@@ -1,6 +1,11 @@
 module Plans
   module SRP
     class Solar < Base
+      def pv_offset(date, hour, kwh)
+        return kwh unless @options[:solar_offset]
+        kwh - solar_generation(date, hour)
+      end
+
       def display_name
         "SRP::Customer Generation/E27"
       end
