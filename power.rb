@@ -45,6 +45,13 @@ rescue OptionParser::InvalidArgument => e
   exit
 end
 
+if options[:csv].nil?
+  puts colorize_string "Missing data file! Pass your CSV with the -f option.", 31
+  puts ""
+  puts parser.help
+  exit
+end
+
 if options[:debug]
   logger.level = Logger::DEBUG
 else
