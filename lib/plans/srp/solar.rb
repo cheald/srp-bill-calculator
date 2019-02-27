@@ -1,6 +1,8 @@
 module Plans
   module SRP
     class Solar < Base
+      # We use this to estimate array efficiency by month
+      # https://rredc.nrel.gov/solar/pubs/redbook/PDFs/AZ.PDF
       EFF_BY_MO = [0, 4.4, 5.4, 6.4, 7.5, 8.0, 8.1, 7.5, 7.3, 6.8, 6.0, 4.9, 4.2]
       EFF_BY_MO_MAX = EFF_BY_MO.max.to_f
 
@@ -16,11 +18,14 @@ module Plans
 
       def offset(date, hour, kwh)
         offset = 0
+        system_size = @options.fetch(:offset, 0).to_f
         month_modifier = EFF_BY_MO[date.month] / EFF_BY_MO_MAX
         if hour.hour >= 9 && hour.hour <= 15
-          offset = @options.fetch(:offset, 0).to_f * month_modifier
+          # Peak hours are between 9 AM and 3 PM
+          offset = system_size * month_modifier
         elsif hour.hour >= 7 && hour.hour < 18
-          offset = @options.fetch(:offset, 0).to_f * 0.6 * month_modifier
+          # Outside of peak hours, estimate only 60% efficiency
+          offset = system_size * month_modifier * 0.6
         end
         [0, kwh - offset].max
       end
