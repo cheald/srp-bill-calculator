@@ -1,6 +1,9 @@
 module Plans
   module SRP
     class Solar < Base
+      EFF_BY_MO = [0, 4.4, 5.4, 6.4, 7.5, 8.0, 8.1, 7.5, 7.3, 6.8, 6.0, 4.9, 4.2]
+      EFF_BY_MO_MAX = EFF_BY_MO.max.to_f
+
       def display_name
         "SRP::Customer Generation/E27"
       end
@@ -11,12 +14,24 @@ module Plans
         n
       end
 
+      def offset(date, hour, kwh)
+        offset = 0
+        month_modifier = EFF_BY_MO[date.month] / EFF_BY_MO_MAX
+        if hour.hour >= 9 && hour.hour <= 15
+          offset = @options.fetch(:offset, 0).to_f * month_modifier
+        elsif hour.hour >= 7 && hour.hour < 18
+          offset = @options.fetch(:offset, 0).to_f * 0.6 * month_modifier
+        end
+        [0, kwh - offset].max
+      end
+
       def fixed_charges
         32.44
       end
 
       # SRP demand charges are based on half-hour demand. We only have kWh to work with.
       def demand_usage(date, hour, kwh)
+        return 0 if level(date, hour) == 0
         if @demand_schedule
           demand_for_period(date.year, date.month)
         else
@@ -46,14 +61,13 @@ module Plans
         peak_demand = demand_for_period(date.year, date.month)
         return 0 if peak_demand == 0
 
-        r = if peak_demand > 10
-              (a * 3) + (b * 7) + (c * (peak_demand - 10))
-            elsif peak_demand > 3
-              (a * 3) + (b * (peak_demand - 3))
-            else
-              a * peak_demand
-            end
-        r / peak_demand
+        if peak_demand > 10
+          (a * 3) + (b * 7) + (c * (peak_demand - 10))
+        elsif peak_demand > 3
+          (a * 3) + (b * (peak_demand - 3))
+        else
+          a * peak_demand
+        end
       end
 
       def level(date, hour)

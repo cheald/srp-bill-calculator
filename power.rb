@@ -9,7 +9,7 @@ def colorize_string(string, code)
 end
 
 logger = Logger.new $stderr
-options = { provider: "srp" }
+options = {provider: "srp"}
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
@@ -28,6 +28,10 @@ parser = OptionParser.new do |opts|
 
   opts.on("-m", "--demand CSV", "Provide an additional demand CSV, available to customers on the SRP E27 plan") do |v|
     options[:demand_schedule] = v
+  end
+
+  opts.on("-o", "--offset kwh", "Estimate an offset of this many kWh from a solar system") do |v|
+    options[:offset] = v.to_f
   end
 
   opts.on("--srp-ez3-start-hour [14,15,16]", %w(14 15 16), "Specify the starting hour as 24h time for SRP's EZ3 plan, for legacy customers.") do |v|

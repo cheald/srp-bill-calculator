@@ -28,6 +28,8 @@ module Plans
       h = hour.hour
       m = hour.min
 
+      kwh = offset date, hour, kwh
+
       @usage_by_month[d.strftime("%Y-%m")] ||= 0
       @usage_by_month[d.strftime("%Y-%m")] += kwh
 
@@ -53,6 +55,10 @@ module Plans
       @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
       @logger.debug "Total is #{@total}"
+    end
+
+    def offset(_date, _hour, kwh)
+      kwh
     end
 
     def holiday?(date)
@@ -81,7 +87,7 @@ module Plans
     end
 
     def billing_periods
-      billing_periods = (@last_date - @first_date).to_i / (365.25 / 12.0)
+      (@last_date - @first_date).to_i / (365.25 / 12.0)
     end
 
     # Compute the fixed charges (ie, connection fees) for the whole period
