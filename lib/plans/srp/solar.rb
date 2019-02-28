@@ -1,3 +1,5 @@
+require_relative "../../sun_times"
+
 module Plans
   module SRP
     class Solar < Base
@@ -5,6 +7,7 @@ module Plans
       # https://rredc.nrel.gov/solar/pubs/redbook/PDFs/AZ.PDF
       EFF_BY_MO = [0, 4.4, 5.4, 6.4, 7.5, 8.0, 8.1, 7.5, 7.3, 6.8, 6.0, 4.9, 4.2]
       EFF_BY_MO_MAX = EFF_BY_MO.max.to_f
+      COST_PER_WATT_INSTALLED = 3.52
 
       def display_name
         "SRP::Customer Generation/E27"
@@ -12,20 +15,28 @@ module Plans
 
       def notes
         n = "Customers with PV arrays may only use this plan."
+        n += " Estimated system cost: $#{format "%2.0f", COST_PER_WATT_INSTALLED * @options.fetch(:offset, 0).to_f * 1000.0}."
         n += " Demand charges are estimated and may be inaccurate." unless @demand_schedule
         n
       end
 
-      def offset(date, hour, kwh)
+      def offset(date, time, kwh)
         offset = 0
         system_size = @options.fetch(:offset, 0).to_f
         month_modifier = EFF_BY_MO[date.month] / EFF_BY_MO_MAX
-        if hour.hour >= 9 && hour.hour <= 15
-          # Peak hours are between 9 AM and 3 PM
+
+        rise = SunTimes.new.rise(time, @options[:lat], @options[:long]).localtime
+        set = SunTimes.new.set(time, @options[:lat], @options[:long]).localtime
+        set += 86400 if set < rise
+        set -= 86400 if set - rise > 86400
+
+        full_strength_window = 3.5 * 3600
+        if time >= rise + full_strength_window && time <= set - full_strength_window
           offset = system_size * month_modifier
-        elsif hour.hour >= 7 && hour.hour < 18
-          # Outside of peak hours, estimate only 60% efficiency
-          offset = system_size * month_modifier * 0.6
+        elsif time >= rise && time <= set
+          # Linear interpolation of efficiency up to the full-strength window
+          percent = ([time - rise, set - time].min / 3600.0) / (full_strength_window / 3600).to_f
+          offset = system_size * month_modifier * percent
         end
         [0, kwh - offset].max
       end

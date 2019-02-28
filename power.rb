@@ -9,7 +9,8 @@ def colorize_string(string, code)
 end
 
 logger = Logger.new $stderr
-options = {provider: "srp"}
+# default lat/long are for Phoenix in general
+options = {provider: "srp", lat: 33.448376, long: -112.074036}
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
@@ -36,6 +37,10 @@ parser = OptionParser.new do |opts|
 
   opts.on("--srp-ez3-start-hour [14,15,16]", %w(14 15 16), "Specify the starting hour as 24h time for SRP's EZ3 plan, for legacy customers.") do |v|
     options[:srp_ez3_start_hour] = v.to_i
+  end
+
+  opts.on("--location loc", "Specify your location as lat,long for accurate sunrise/sunset times") do |v|
+    options[:lat], options[:long] = v.split(",").map(&:to_f)
   end
 end
 
@@ -89,7 +94,10 @@ CSV.open(options[:csv], headers: true) do |csv|
   end
   arr.select(&:first).sort_by(&:first).each do |row|
     logger.debug "-" * 79
-    plans.each { |plan| plan.add(row[0], Time.parse(row[1]), row[2].to_f) }
+    date = row[0]
+    time = Time.parse(row[1])
+    datetime = Time.local(date.year, date.month, date.day, time.hour, time.min, time.sec)
+    plans.each { |plan| plan.add(datetime, row[2].to_f) }
   end
 end
 

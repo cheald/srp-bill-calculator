@@ -17,18 +17,18 @@ module Plans
       @demand_schedule.fetch(key, @peak)
     end
 
-    def add(date, hour, kwh)
+    def add(datetime, kwh)
       @demand_total ||= 0
       @monthly_usage ||= 0
       @usage_by_month ||= {}
       @peak ||= 0
       @total_kwh ||= 0
 
-      d = date
-      h = hour.hour
-      m = hour.min
+      d = datetime
+      h = datetime.hour
+      m = datetime.min
 
-      kwh = offset date, hour, kwh
+      kwh = offset datetime, datetime, kwh
 
       @usage_by_month[d.strftime("%Y-%m")] ||= 0
       @usage_by_month[d.strftime("%Y-%m")] += kwh
@@ -51,8 +51,8 @@ module Plans
       @monthly_usage += k
       @total_kwh += kwh
 
-      v = cost date, hour, kwh
-      @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
+      v = cost datetime, datetime, kwh
+      # @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
       @logger.debug "Total is #{@total}"
     end
@@ -87,7 +87,7 @@ module Plans
     end
 
     def billing_periods
-      (@last_date - @first_date).to_i / (365.25 / 12.0)
+      (@last_date - @first_date).to_i / (365.25 / 12.0 * 86400)
     end
 
     # Compute the fixed charges (ie, connection fees) for the whole period
