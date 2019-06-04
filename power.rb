@@ -10,7 +10,7 @@ end
 
 logger = Logger.new $stderr
 # default lat/long are for Phoenix in general
-options = { provider: "srp", lat: 33.448376, long: -112.074036 }
+options = { provider: "srp", lat: 33.448376, long: -112.074036, cpw: 3.52, efficiency: 0.78 }
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
@@ -41,6 +41,14 @@ parser = OptionParser.new do |opts|
 
   opts.on("--location loc", "Specify your location as lat,long for accurate sunrise/sunset times") do |v|
     options[:lat], options[:long] = v.split(",").map(&:to_f)
+  end
+
+  opts.on("-w", "--costperwatt cpw", "Cost per watt (installed)") do |v|
+    options[:cpw] = v.to_f
+  end
+
+  opts.on("-e", "--efficiency efficiency", "Array efficiency vs nominal (0.78 default)") do |v|
+    options[:efficiency] = v.to_f
   end
 end
 

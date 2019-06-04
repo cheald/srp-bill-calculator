@@ -11,11 +11,11 @@ module Plans
 
       def notes
         "Only available to customers with a plug-in battery or hybrid vehicle. Requires solar. " +
-        "Estimated system cost: $#{format "%2.0f", COST_PER_WATT_INSTALLED * @options.fetch(:offset, 0).to_f * 1000.0}."
+        "Estimated system cost: #{system_cost}."
       end
 
       def display_name
-        "SRP/E14"
+        "SRP/E14 (EV Solar)"
       end
 
       def fixed_charges

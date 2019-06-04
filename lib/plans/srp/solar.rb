@@ -6,12 +6,12 @@ module Plans
       end
 
       def display_name
-        "SRP/E27"
+        "SRP/E27 (Customer Generation)"
       end
 
       def notes
         n = "Customers with PV arrays may only use this plan."
-        n += " Estimated system cost: $#{format "%2.0f", COST_PER_WATT_INSTALLED * @options.fetch(:offset, 0).to_f * 1000.0}."
+        n += " Estimated system cost: #{system_cost}."
         n += " Demand charges are estimated and may be inaccurate." unless @demand_schedule
         n
       end

@@ -6,11 +6,11 @@ module Plans
       end
 
       def display_name
-        "SRP/E13"
+        "SRP/E13 (TOU Solar)"
       end
 
       def notes
-        "Estimated system cost: $#{format "%2.0f", COST_PER_WATT_INSTALLED * @options.fetch(:offset, 0).to_f * 1000.0}."
+        "Estimated system cost: #{system_cost}."
       end
 
       def self.solar_eligible

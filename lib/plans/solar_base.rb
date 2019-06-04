@@ -4,14 +4,25 @@ module Plans
   class SolarBase < ::Plans::Base
     EFF_BY_MO = [0, 4.4, 5.4, 6.4, 7.5, 8.0, 8.1, 7.5, 7.3, 6.8, 6.0, 4.9, 4.2]
     EFF_BY_MO_MAX = EFF_BY_MO.max.to_f
-    COST_PER_WATT_INSTALLED = 3.52
+
+    def cost_per_watt_installed
+      @options[:cpw]
+    end
+
+    def system_size
+      @options.fetch(:offset, 0).to_f
+    end
+
+    def system_cost
+      format "$%2.0f", cost_per_watt_installed * system_size * 1000.0
+    end
 
     def offset(date, time, kwh)
       offset = 0
       system_size = @options.fetch(:offset, 0).to_f
       month_modifier = EFF_BY_MO[date.month] / EFF_BY_MO_MAX
 
-      efficiency = 0.78
+      efficiency = @options[:efficiency]
       system_size *= efficiency
 
       rise = SunTimes.new.rise(time, @options[:lat], @options[:long]).localtime
