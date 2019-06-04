@@ -10,7 +10,7 @@ end
 
 logger = Logger.new $stderr
 # default lat/long are for Phoenix in general
-options = {provider: "srp", lat: 33.448376, long: -112.074036}
+options = { provider: "srp", lat: 33.448376, long: -112.074036 }
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
@@ -85,7 +85,8 @@ if options[:demand_schedule]
   end
 end
 
-plans = root.constants.map { |c| root.const_get(c).new(logger, demand_schedule, options) }
+plans = root::PLANS.select { |c| !options[:offset] || c.solar_eligible }.map { |c| c.new(logger, demand_schedule, options) }
+plans = root::PLANS.map { |c| c.new(logger, demand_schedule, options) }
 
 CSV.open(options[:csv], headers: true) do |csv|
   arr = csv.to_a

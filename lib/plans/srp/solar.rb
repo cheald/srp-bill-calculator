@@ -1,16 +1,12 @@
-require_relative "../../sun_times"
-
 module Plans
   module SRP
-    class Solar < Base
-      # We use this to estimate array efficiency by month
-      # https://rredc.nrel.gov/solar/pubs/redbook/PDFs/AZ.PDF
-      EFF_BY_MO = [0, 4.4, 5.4, 6.4, 7.5, 8.0, 8.1, 7.5, 7.3, 6.8, 6.0, 4.9, 4.2]
-      EFF_BY_MO_MAX = EFF_BY_MO.max.to_f
-      COST_PER_WATT_INSTALLED = 3.52
+    class Solar < Plans::SolarBase
+      def self.solar_eligible
+        true
+      end
 
       def display_name
-        "SRP::Customer Generation/E27"
+        "SRP/E27"
       end
 
       def notes
@@ -20,38 +16,19 @@ module Plans
         n
       end
 
-      def offset(date, time, kwh)
-        offset = 0
-        system_size = @options.fetch(:offset, 0).to_f
-        month_modifier = EFF_BY_MO[date.month] / EFF_BY_MO_MAX
-
-        rise = SunTimes.new.rise(time, @options[:lat], @options[:long]).localtime
-        set = SunTimes.new.set(time, @options[:lat], @options[:long]).localtime
-        set += 86400 if set < rise
-        set -= 86400 if set - rise > 86400
-
-        full_strength_window = 3.5 * 3600
-        if time >= rise + full_strength_window && time <= set - full_strength_window
-          offset = system_size * month_modifier
-        elsif time >= rise && time <= set
-          # Linear interpolation of efficiency up to the full-strength window
-          percent = ([time - rise, set - time].min / 3600.0) / (full_strength_window / 3600).to_f
-          offset = system_size * month_modifier * percent
-        end
-        [0, kwh - offset].max
-      end
-
       def fixed_charges
         32.44
       end
 
-      # SRP demand charges are based on half-hour demand. We only have kWh to work with.
       def demand_usage(date, hour, kwh)
         return 0 if level(date, hour) == 0
         if @demand_schedule
-          demand_for_period(date.year, date.month)
+          demand_for_period(date)
         else
-          kwh / 2.0
+          # SRP demand charges are based on half-hour demand. We only have kWh to work with.
+          # We'll estimate the half-hour peak charge as 70% of the total usage of the hour.
+          # This likely undershoots a bit.
+          kwh * 0.7
         end
       end
 
@@ -74,7 +51,7 @@ module Plans
           c = 34.19
         end
 
-        peak_demand = demand_for_period(date.year, date.month)
+        peak_demand = demand_for_period(date) || 0
         return 0 if peak_demand == 0
 
         if peak_demand > 10

@@ -1,8 +1,13 @@
 module Plans
   module APS
     class SaverChoice < Base
+      def self.solar_eligible
+        true
+      end
+
       def fixed_charges
-        13
+        system_size = @options.fetch(:offset, 0).to_f
+        13 + 0.93 * system_size
       end
 
       def level(date, hour)

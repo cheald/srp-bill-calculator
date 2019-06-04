@@ -1,12 +1,12 @@
 module Plans
   module APS
-    class SaverChoicePlus < Base
+    class SaverChoiceTech < Base
       def self.solar_eligible
         true
       end
 
       def fixed_charges
-        13
+        (0.493 * 30)
       end
 
       # APS uses average demand rather than peak demand
@@ -30,20 +30,28 @@ module Plans
         end
       end
 
-      def demand_rate(date, hour)
-        8.40
-      end
-
       def level(date, hour)
         case date.wday
         when 0, 6
-          0
+          1
         else
-          case hour
-          when 15...20
-            1
+          case date.month
+          when 1..4, 11..12
+            case hour
+            when 10...15
+              0
+            when 15...20
+              2
+            else
+              1
+            end
           else
-            0
+            case hour
+            when 15...20
+              2
+            else
+              1
+            end
           end
         end
       end
@@ -54,16 +62,18 @@ module Plans
         when 1..4, 11..12
           case l
           when 0
-            0.07798
+            0.032
           when 1
-            0.11017
+            0.10873
+          when 2
+            0.23068
           end
         else
           case l
-          when 0
-            0.07798
           when 1
-            0.13160
+            0.10873
+          when 2
+            0.24314
           end
         end
       end

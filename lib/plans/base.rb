@@ -4,6 +4,10 @@ module Plans
   class Base
     attr_reader :monthly_usage, :total_kwh
 
+    def self.solar_eligible
+      false
+    end
+
     def initialize(logger, demand_schedule, options)
       @logger = logger
       @total = 0
@@ -11,43 +15,48 @@ module Plans
       @options = options
     end
 
-    def demand_for_period(year, month)
-      return @peak unless @demand_schedule
-      key = Date.new(year, month, 1).strftime("%Y-%m")
-      @demand_schedule.fetch(key, @peak)
+    def demand_for_period(date)
+      key = date.strftime("%Y-%m")
+      demand = (@demand_by_month[key] || [0]).max
+      return demand || 0 unless @demand_schedule
+      @demand_schedule.fetch(key, demand)
     end
 
     def add(datetime, kwh)
       @demand_total ||= 0
       @monthly_usage ||= 0
+      @usage_total ||= 0
+      @offset_total ||= 0
       @usage_by_month ||= {}
-      @peak ||= 0
+      @readings_by_month ||= {}
+      @demand_by_month ||= {}
       @total_kwh ||= 0
 
       d = datetime
       h = datetime.hour
       m = datetime.min
 
-      kwh = offset datetime, datetime, kwh
+      datekey = d.strftime("%Y-%m")
+      @demand_by_month[datekey] ||= []
 
-      @usage_by_month[d.strftime("%Y-%m")] ||= 0
-      @usage_by_month[d.strftime("%Y-%m")] += kwh
+      pre_offset = kwh
+      @usage_total += kwh
+      kwh = offset datetime, datetime, kwh
+      @offset_total += (pre_offset - kwh)
+
+      @usage_by_month[datekey] ||= 0
+      @usage_by_month[datekey] += kwh
+      @readings_by_month[datekey] ||= 0
+      @readings_by_month[datekey] += 1
 
       @first_date ||= d
       @last_date = d
       @last_hour = h
 
-      if (d.day == 1 && h == 0 && m == 0)
-        peak = demand_for_period(d.year, d.month)
-        demand_for_month = peak * demand_rate(d, h)
-        @demand_total += demand_for_month
-        @logger.debug "Demand charge for month: #{@peak} kW @ #{demand_rate(d, h)} = #{demand_for_month}"
-        @logger.debug "Total demand charges so far: #{@demand_total}"
-        @peak = 0
-        @monthly_usage = 0
-      end
-      k = demand_usage(d, h, kwh)
-      @peak = k if k > @peak
+      new_month(d) if (d.day == 1 && h == 0 && m == 0)
+
+      k = [demand_usage(d, h, kwh), 0].max
+      @demand_by_month[datekey] << k if k > 0
       @monthly_usage += k
       @total_kwh += kwh
 
@@ -55,6 +64,19 @@ module Plans
       # @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
       @logger.debug "Total is #{@total}"
+    end
+
+    def new_month(date)
+      # Look at the previous month's data
+      d = date - 86400
+      demand = demand_for_period(d) || 0
+      rate = demand_rate(d, nil)
+      @demand_total += demand * rate
+      @monthly_usage = reset_monthly_usage
+    end
+
+    def reset_monthly_usage
+      0
     end
 
     def offset(_date, _hour, kwh)
@@ -79,11 +101,15 @@ module Plans
     end
 
     def total
-      @total + total_demand_charge + total_fixed_charges
+      usage_total + total_demand_charge + total_fixed_charges
+    end
+
+    def usage_total
+      [@total, 0].max
     end
 
     def energy_total
-      @total + total_demand_charge
+      usage_total + total_demand_charge
     end
 
     def billing_periods
@@ -97,7 +123,7 @@ module Plans
     end
 
     def total_demand_charge
-      peak = demand_for_period(@last_date.year, @last_date.month)
+      peak = demand_for_period(@last_date) || 0
       @demand_total + (peak * demand_rate(@last_date, @last_hour))
     end
 
@@ -118,23 +144,27 @@ module Plans
     end
 
     def self.print_header
-      puts colorize_string(format("%-30s\t%8s\t%8s\t%8s\t%8s\t%-8s",
+      puts colorize_string(format("%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%-8s",
                                   "Plan Name",
                                   "Total",
                                   "Energy",
                                   "Demand",
                                   "Fees",
+                                  "Usage (kW)",
+                                  "Gen (kW)",
                                   "Notes"), 94)
-      puts "-" * 101
+      puts "-" * 200
     end
 
     def to_s
-      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%s",
+      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%s",
         display_name,
         format("$%2.2f", total),
-        format("$%2.2f", @total),
+        format("$%2.2f", usage_total),
         format("$%2.2f", total_demand_charge),
         format("$%2.2f", total_fixed_charges),
+        format("%2.1f", @usage_total),
+        format("%2.1f", @offset_total),
         colorize_string(notes, 37)
     end
   end
