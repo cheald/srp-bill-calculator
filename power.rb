@@ -10,7 +10,7 @@ end
 
 logger = Logger.new $stderr
 # default lat/long are for Phoenix in general
-options = { provider: "srp", lat: 33.448376, long: -112.074036, cpw: 3.52, efficiency: 0.78 }
+options = { provider: "srp", lat: 33.448376, long: -112.074036, cpw: 3.52, efficiency: 0.78, loadcap: 9999 }
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
@@ -49,6 +49,10 @@ parser = OptionParser.new do |opts|
 
   opts.on("-e", "--efficiency efficiency", "Array efficiency vs nominal (0.78 default)") do |v|
     options[:efficiency] = v.to_f
+  end
+
+  opts.on("-l", "--loadgov gov", "Simulate a load goveroner by capping hourly usage at a given level") do |v|
+    options[:loadcap] = v.to_f
   end
 end
 

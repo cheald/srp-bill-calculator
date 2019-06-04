@@ -10,6 +10,7 @@ module Plans
     require_relative "srp/basic"
     require_relative "srp/m_power"
     require_relative "srp/solar"
+    require_relative "srp/solar-e15"
     PLANS = [
       Plans::SRP::EZThree,
       Plans::SRP::TimeOfUse,
@@ -19,6 +20,7 @@ module Plans
       Plans::SRP::Solar,
       Plans::SRP::EVSolar,
       Plans::SRP::TimeOfUseSolar,
+      Plans::SRP::SolarAverage,
     ]
   end
 end

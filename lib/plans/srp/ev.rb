@@ -5,6 +5,10 @@ module Plans
         "Only available to customers with a plug-in battery or hybrid vehicle."
       end
 
+      def display_name
+        "SRP/E29 (Electric Vehicle)"
+      end
+
       def fixed_charges
         20
       end

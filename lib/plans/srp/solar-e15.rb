@@ -1,12 +1,12 @@
 module Plans
   module SRP
-    class Solar < Plans::SolarBase
+    class SolarAverage < Plans::SolarBase
       def self.solar_eligible
         true
       end
 
       def display_name
-        "SRP/E27 (Customer Generation)"
+        "SRP/E15 (Average Demand)"
       end
 
       def notes
@@ -25,41 +25,27 @@ module Plans
           demand_for_period(date)
         else
           # SRP demand charges are based on half-hour demand. We only have kWh to work with.
-          # We'll estimate the half-hour peak charge as 75% of the total usage of the hour.
+          # We'll estimate the half-hour peak charge as 70% of the total usage of the hour.
           # This likely undershoots a bit.
-          kwh * 0.75
+          kwh * 0.7
         end
       end
 
       def demand_rate(date, hour)
-        a = nil
-        b = nil
-        c = nil
         case date.month
         when 1..4, 11..12
-          a = 3.55
-          b = 5.68
-          c = 9.74
+          8.13
         when 5..6, 9..10
-          a = 8.03
-          b = 14.63
-          c = 27.77
+          19.29
         else
-          a = 9.59
-          b = 17.82
-          c = 34.19
+          21.94
         end
+      end
 
-        peak_demand = demand_for_period(date) || 0
-        return 0 if peak_demand == 0
-
-        if peak_demand > 10
-          ((a * 3) + (b * 7) + (c * (peak_demand - 10))) / peak_demand
-        elsif peak_demand > 3
-          ((a * 3) + (b * (peak_demand - 3))) / peak_demand
-        else
-          a
-        end
+      def demand_for_period(date)
+        key = date.strftime("%Y-%m")
+        demand = (@demand_by_month[key] || [0])
+        demand.inject(&:+) / demand.length.to_f
       end
 
       def level(date, hour)

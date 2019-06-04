@@ -42,6 +42,7 @@ module Plans
       pre_offset = kwh
       @usage_total += kwh
       kwh = offset datetime, datetime, kwh
+      capped_kwh = [@options[:loadcap], kwh].max
       @offset_total += (pre_offset - kwh)
 
       @usage_by_month[datekey] ||= 0
