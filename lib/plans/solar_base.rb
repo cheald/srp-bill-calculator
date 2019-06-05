@@ -5,6 +5,10 @@ module Plans
     EFF_BY_MO = [0, 4.4, 5.4, 6.4, 7.5, 8.0, 8.1, 7.5, 7.3, 6.8, 6.0, 4.9, 4.2]
     EFF_BY_MO_MAX = EFF_BY_MO.max.to_f
 
+    def self.solar_eligible
+      true
+    end
+
     def cost_per_watt_installed
       @options[:cpw]
     end

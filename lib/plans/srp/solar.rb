@@ -1,10 +1,6 @@
 module Plans
   module SRP
     class Solar < Plans::SolarBase
-      def self.solar_eligible
-        true
-      end
-
       def display_name
         "SRP/E27 (Customer Generation)"
       end

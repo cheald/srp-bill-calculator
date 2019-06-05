@@ -13,10 +13,6 @@ module Plans
         "Estimated system cost: #{system_cost}."
       end
 
-      def self.solar_eligible
-        true
-      end
-
       def demand_usage(date, hour, kwh)
         0
       end

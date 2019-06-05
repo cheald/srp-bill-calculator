@@ -1,10 +1,6 @@
 module Plans
   module SRP
     class EVSolar < SolarBase
-      def self.solar_eligible
-        true
-      end
-
       def demand_usage(date, hour, kwh)
         0
       end

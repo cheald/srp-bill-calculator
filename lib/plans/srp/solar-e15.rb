@@ -3,10 +3,6 @@ module Plans
     class SolarAverage < Plans::SolarBase
       include AverageDemandConcern
 
-      def self.solar_eligible
-        true
-      end
-
       # Only accumulate demand charges for on-peak periods
       def add_demand(date, kwh)
         return 0 unless level(date, date.hour) > 0
