@@ -143,6 +143,6 @@ end
 puts colorize_string worst, 31 if worst
 puts ""
 
-sorted.each do |plan|
+all.each do |plan|
   plan.extra_notes
 end if options[:extended]
