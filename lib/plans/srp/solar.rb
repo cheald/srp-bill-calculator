@@ -20,16 +20,21 @@ module Plans
         if @demand_schedule
           demand_for_period(date)
         else
-          # SRP demand charges are based on half-hour demand. We only have kWh to work with.
-          # We'll estimate the half-hour peak charge as 75% of the total usage of the hour.
-          # This likely undershoots a bit.
-          kwh * 0.75
+          # SRP cares about half-hour demand, but it doesn't particularly define this; I think this means effectively
+          # the peak kilowatt-half hour for the month. We'll use 15% over the peak value of any individual hour, to
+          # estimate cases where peak draw was high for a period, and was then dropped for the remainder of the hour.
+          kwh * 1.15
         end
       end
 
       # Only accumulate demand charges for on-peak periods
       def add_demand(date, kwh)
         return 0 unless level(date, date.hour) > 0
+
+        if kwh > 20
+          p [kwh, date, level(date, date.hour)]
+        end
+
         super
       end
 

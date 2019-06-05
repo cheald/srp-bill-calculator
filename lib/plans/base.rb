@@ -25,6 +25,8 @@ module Plans
       @readings_by_month ||= {}
       @total_kwh ||= 0
       @net_metered_kwh ||= 0
+      @max_demand ||= 0
+      @demands ||= []
 
       d = datetime
       h = datetime.hour
@@ -61,6 +63,9 @@ module Plans
       new_month(d) if (d.day == 1 && h == 0 && m == 0)
 
       k = add_demand d, kwh
+      @max_demand = k if k > @max_demand
+      @demands << k if k > 0
+
       @monthly_usage += k
       @total_kwh += kwh
 
@@ -76,6 +81,7 @@ module Plans
 
       k = [demand_usage(date, date.hour, kwh), 0].max
       demand_by_month[datekey] << k if k > 0
+
       return k
     end
 
@@ -190,15 +196,22 @@ module Plans
                                   "Energy",
                                   "Demand",
                                   "Fees",
-                                  "Usage (kW)",
-                                  "Gen (kW)",
-                                  "Excess (kW)",
+                                  "Usage (kWh)",
+                                  "Gen (kWh)",
+                                  "Excess (kWh)",
+                                  "Demand (kW) avg ± stddev",
                                   "Notes"), 94)
       puts "-" * 200
     end
 
     def to_s
-      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%s",
+      demand_avg = demand_min = demand_max = demand_stddev = 0
+      if @demands.any?
+        demand_sum = @demands.inject(&:+)
+        demand_avg = demand_sum / @demands.length.to_f
+        demand_stddev = @demands.map { |d| d - demand_avg }.map { |d| d * d }.inject(&:+) / @demands.length.to_f
+      end
+      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s",
         display_name,
         format("$%2.2f", total),
         format("$%2.2f", usage_total),
@@ -207,6 +220,7 @@ module Plans
         format("%2.1f", @usage_total),
         format("%2.1f", @offset_total),
         format("%2.1f", @excess_gen),
+        demand_avg > 0 ? format("%4.1f ± %-4.1f", demand_avg, demand_stddev) : "",
         colorize_string(notes, 37)
     end
   end
