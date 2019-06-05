@@ -8,18 +8,18 @@ module Plans
       def level(date)
         case date.month
         when 1..4, 11..12
-          0
+          :off_peak
         when 5..6, 9..10
           if monthly_usage <= 2000
-            0
+            :off_peak
           else
-            1
+            :on_peak
           end
         when 7..8
           if monthly_usage <= 2000
-            0
+            :off_peak
           else
-            1
+            :on_peak
           end
         else
           raise "Bad level"
@@ -33,18 +33,18 @@ module Plans
           0.0782
         when 5..6, 9..10
           case l
-          when 0
+          when :off_peak
             0.1091
-          when 1
+          when :on_peak
             0.1134
           else
             raise "Bad level"
           end
         when 7..8
           case l
-          when 0
+          when :off_peak
             0.1157
-          when 1
+          when :on_peak
             0.127
           else
             raise "Bad level"

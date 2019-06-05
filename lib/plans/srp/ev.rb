@@ -14,26 +14,26 @@ module Plans
       end
 
       def level(date)
-        return 0 if holiday?(date)
+        return :off_peak if holiday?(date)
         case date.month
         # Winter
         when 1..4, 11..12
           case date.hour
           when 0...5, 23..24
-            0
+            :super_off_peak
           when 5...9, 17...21
-            (date.wday == 0 || date.wday == 6) ? 1 : 2
+            (date.wday == 0 || date.wday == 6) ? :off_peak : :on_peak
           else
-            1
+            :off_peak
           end
         else
           case date.hour
           when 0...5, 23..24
-            0
+            :super_off_peak
           when 14...20
-            2
+            :on_peak
           else
-            1
+            :off_peak
           end
         end
       end
@@ -43,33 +43,33 @@ module Plans
         case date.month
         when 1..4, 11..12
           case l
-          when 0
+          when :super_off_peak
             0.0575
-          when 1
+          when :off_peak
             0.0737
-          when 2
+          when :on_peak
             0.0951
           else
             raise "Bad level"
           end
         when 5..6, 9..10
           case l
-          when 0
+          when :super_off_peak
             0.0611
-          when 1
+          when :off_peak
             0.0765
-          when 2
+          when :on_peak
             0.2094
           else
             raise "Bad level"
           end
         when 7..8
           case l
-          when 0
+          when :super_off_peak
             0.0614
-          when 1
+          when :off_peak
             0.0770
-          when 2
+          when :on_peak
             0.2409
           else
             raise "Bad level"
