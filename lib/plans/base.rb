@@ -41,7 +41,7 @@ module Plans
 
       pre_offset = kwh
       @usage_total += kwh
-      kwh = offset datetime, datetime, kwh
+      kwh = offset datetime, kwh
       capped_kwh = [@options[:loadcap], kwh].min
       kwh = capped_kwh
 
@@ -128,7 +128,7 @@ module Plans
       0
     end
 
-    def offset(_date, _hour, kwh)
+    def offset(_date, kwh)
       kwh
     end
 

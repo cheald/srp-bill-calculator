@@ -24,11 +24,15 @@ module Plans
       format "$%2.0f", cost_per_watt_installed * system_size * 1000.0
     end
 
-    def offset(date, time, kwh)
+    def offset(date, kwh)
+      kwh - generation_for_hour(date)
+    end
+
+    def generation_for_hour(date)
       if @pvwatts
-        kwh - @pvwatts.estimate(date, time)
+        @pvwatts.estimate(date)
       else
-        kwh - SolarEstimate.estimate(date, time, @options.fetch(:offset, 0).to_f, @options[:efficiency], @options[:lat], @options[:long])
+        SolarEstimate.estimate(date, @options.fetch(:offset, 0).to_f, @options[:efficiency], @options[:lat], @options[:long])
       end
     end
   end

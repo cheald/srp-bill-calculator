@@ -5,8 +5,8 @@ class PvwattsEstimate
     generate_pvwatts_data
   end
 
-  def estimate(date, time)
-    key = date.strftime("%-m-%-d-%-H")
+  def estimate(time)
+    key = time.strftime("%-m-%-d-%-H")
     @data[key] / @size * @system_size
   end
 
