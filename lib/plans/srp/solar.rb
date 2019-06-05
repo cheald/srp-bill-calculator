@@ -31,6 +31,12 @@ module Plans
         end
       end
 
+      # Only accumulate demand charges for on-peak periods
+      def add_demand(date, kwh)
+        return 0 unless level(date, date.hour) > 0
+        super
+      end
+
       def demand_cost(demand, date, hour)
         a = nil
         b = nil
