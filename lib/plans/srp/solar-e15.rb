@@ -1,6 +1,8 @@
 module Plans
   module SRP
     class SolarAverage < Plans::SolarBase
+      include AverageDemandConcern
+
       def self.solar_eligible
         true
       end
@@ -40,12 +42,6 @@ module Plans
         else
           21.94
         end
-      end
-
-      def demand_for_period(date)
-        key = date.strftime("%Y-%m")
-        demand = (@demand_by_month[key] || [0])
-        demand.inject(&:+) / demand.length.to_f
       end
 
       def level(date, hour)

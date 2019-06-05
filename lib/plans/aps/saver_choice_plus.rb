@@ -1,19 +1,14 @@
 module Plans
   module APS
     class SaverChoicePlus < Base
+      include AverageDemandConcern
+
       def self.solar_eligible
         true
       end
 
       def fixed_charges
         13
-      end
-
-      # APS uses average demand rather than peak demand
-      def demand_for_period(date)
-        key = date.strftime("%Y-%m")
-        return 0 if @demand_by_month[key].length == 0
-        @demand_by_month[key].inject(:+) / @demand_by_month[key].length.to_f
       end
 
       def demand_usage(date, hour, kwh)

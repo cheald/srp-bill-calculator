@@ -106,7 +106,6 @@ CSV.open(options[:csv], headers: true) do |csv|
     row[0] = Date.strptime(row[0], "%m/%d/%Y") rescue nil
   end
   arr.select(&:first).sort_by(&:first).each do |row|
-    logger.debug "-" * 79
     date = row[0]
     time = Time.parse(row[1])
     datetime = Time.local(date.year, date.month, date.day, time.hour, time.min, time.sec)

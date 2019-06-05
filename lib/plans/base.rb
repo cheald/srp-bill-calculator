@@ -15,21 +15,14 @@ module Plans
       @options = options
     end
 
-    def demand_for_period(date)
-      key = date.strftime("%Y-%m")
-      demand = (@demand_by_month[key] || [0]).max
-      return demand || 0 unless @demand_schedule
-      @demand_schedule.fetch(key, demand)
-    end
-
     def add(datetime, kwh)
       @demand_total ||= 0
       @monthly_usage ||= 0
       @usage_total ||= 0
       @offset_total ||= 0
+      @excess_gen ||= 0
       @usage_by_month ||= {}
       @readings_by_month ||= {}
-      @demand_by_month ||= {}
       @total_kwh ||= 0
       @net_metered_kwh ||= 0
 
@@ -37,21 +30,24 @@ module Plans
       h = datetime.hour
       m = datetime.min
 
-      datekey = d.strftime("%Y-%m")
-      @demand_by_month[datekey] ||= []
-
       pre_offset = kwh
       @usage_total += kwh
       kwh = offset datetime, datetime, kwh
       capped_kwh = [@options[:loadcap], kwh].min
       kwh = capped_kwh
+
+      @offset_total += (pre_offset - kwh)
+      @excess_gen -= kwh if kwh < 0
+
+      # @logger.debug "pre_offset: #{pre_offset}, kwh: #{kwh}"
       # When we have a flat net metering buyback rate, us it.
       # Otherwise, we just count this as a kWh credit at retail rates
       if kwh < 0 && net_metering_rate != 0
         @net_metered_kwh -= kwh
         kwh = 0
       end
-      @offset_total += (pre_offset - kwh)
+
+      datekey = d.strftime("%Y-%m")
 
       @usage_by_month[datekey] ||= 0
       @usage_by_month[datekey] += kwh
@@ -64,15 +60,34 @@ module Plans
 
       new_month(d) if (d.day == 1 && h == 0 && m == 0)
 
-      k = [demand_usage(d, h, kwh), 0].max
-      @demand_by_month[datekey] << k if k > 0
+      k = add_demand d, kwh
       @monthly_usage += k
       @total_kwh += kwh
 
       v = cost datetime, datetime, kwh
       # @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
-      @logger.debug "Total is #{@total}"
+      # @logger.debug "Total is #{@total}"
+    end
+
+    def add_demand(date, kwh)
+      datekey = date.strftime("%Y-%m")
+      demand_by_month[datekey] ||= []
+
+      k = [demand_usage(date, date.hour, kwh), 0].max
+      demand_by_month[datekey] << k if k > 0
+      return k
+    end
+
+    def demand_by_month
+      @demand_by_month ||= {}
+    end
+
+    def demand_for_period(date)
+      key = date.strftime("%Y-%m")
+      demand = (demand_by_month[key] || [0]).max
+      return demand || 0 unless @demand_schedule
+      @demand_schedule.fetch(key, demand)
     end
 
     def new_month(date)
@@ -81,7 +96,8 @@ module Plans
       demand = demand_for_period(d) || 0
       demand_charge = demand_cost(demand, d, nil)
       @demand_total += demand_charge
-      @logger.debug "Added #{demand_charge} (#{demand} kW demand)" if demand_charge > 0
+      # @logger.debug "Date: #{d.inspect} - Added #{demand_charge} (#{demand} kW demand)" if demand_charge > 0
+
       @monthly_usage = reset_monthly_usage
     end
 
@@ -141,6 +157,8 @@ module Plans
     end
 
     def demand_cost(demand, date, hour)
+      # @logger.debug "Logging #{demand} demand at a rate of #{demand_rate(date, hour)}"
+      # exit if demand > 0
       demand * demand_rate(date, hour)
     end
 
@@ -166,7 +184,7 @@ module Plans
     end
 
     def self.print_header
-      puts colorize_string(format("%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%-8s",
+      puts colorize_string(format("%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%-8s\t%-8s",
                                   "Plan Name",
                                   "Total",
                                   "Energy",
@@ -174,6 +192,7 @@ module Plans
                                   "Fees",
                                   "Usage (kW)",
                                   "Gen (kW)",
+                                  "Excess (kW)",
                                   "Notes"), 94)
       puts "-" * 200
     end
@@ -187,6 +206,7 @@ module Plans
         format("$%2.2f", total_fixed_charges),
         format("%2.1f", @usage_total),
         format("%2.1f", @offset_total),
+        format("%2.1f", @excess_gen),
         colorize_string(notes, 37)
     end
   end
