@@ -6,7 +6,7 @@ module Plans
         0
       end
 
-      def rate(date, hour)
+      def rate(date)
         case date.month
         when 1..4, 11..12
           0.0782

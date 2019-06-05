@@ -14,7 +14,7 @@ module Plans
         13
       end
 
-      def rate(date, hour)
+      def rate(date)
         0.12393
       end
     end

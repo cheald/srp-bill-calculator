@@ -11,10 +11,10 @@ module Plans
         (0.493 * 30)
       end
 
-      def demand_usage(date, hour, kwh)
+      def demand_usage(date, kwh)
         case date.wday
         when 1..5
-          case hour
+          case date.hour
           when 15...20
             kwh
           else
@@ -25,14 +25,14 @@ module Plans
         end
       end
 
-      def level(date, hour)
+      def level(date)
         case date.wday
         when 0, 6
           1
         else
           case date.month
           when 1..4, 11..12
-            case hour
+            case date.hour
             when 10...15
               0
             when 15...20
@@ -41,7 +41,7 @@ module Plans
               1
             end
           else
-            case hour
+            case date.hour
             when 15...20
               2
             else
@@ -51,8 +51,8 @@ module Plans
         end
       end
 
-      def rate(date, hour)
-        l = level date, hour
+      def rate(date)
+        l = level date
         case date.month
         when 1..4, 11..12
           case l

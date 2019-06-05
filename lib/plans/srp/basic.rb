@@ -5,7 +5,7 @@ module Plans
         20
       end
 
-      def level(date, hour)
+      def level(date)
         case date.month
         when 1..4, 11..12
           0
@@ -26,8 +26,8 @@ module Plans
         end
       end
 
-      def rate(date, hour)
-        l = level date, hour
+      def rate(date)
+        l = level date
         case date.month
         when 1..4, 11..12
           0.0782

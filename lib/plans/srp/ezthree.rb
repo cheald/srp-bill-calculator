@@ -5,19 +5,19 @@ module Plans
         20
       end
 
-      def level(date, hour)
+      def level(date)
         return 0 if holiday?(date)
         case date.wday
         when 0, 6
           0
         else
           start = @options.fetch(:srp_ez3_start_hour, "15").to_i
-          (start...start + 3).cover?(hour) ? 1 : 0
+          (start...start + 3).cover?(date.hour) ? 1 : 0
         end
       end
 
-      def rate(date, hour)
-        l = level date, hour
+      def rate(date)
+        l = level date
         case date.month
         when 1..4, 11..12
           case l

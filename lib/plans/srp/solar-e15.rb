@@ -5,7 +5,7 @@ module Plans
 
       # Only accumulate demand charges for on-peak periods
       def add_demand(date, kwh)
-        return 0 unless level(date, date.hour) > 0
+        return 0 unless level(date) > 0
         super
       end
 
@@ -23,8 +23,8 @@ module Plans
         32.44
       end
 
-      def demand_usage(date, hour, kwh)
-        return 0 if level(date, hour) == 0
+      def demand_usage(date, kwh)
+        return 0 if level(date) == 0
         if @demand_schedule
           demand_for_period(date)
         else
@@ -35,7 +35,7 @@ module Plans
         end
       end
 
-      def demand_rate(date, hour)
+      def demand_rate(date)
         case date.month
         when 1..4, 11..12
           8.13
@@ -46,18 +46,18 @@ module Plans
         end
       end
 
-      def level(date, hour)
+      def level(date)
         return 0 if holiday?(date)
         case date.month
         when 1..4, 11..12
-          case hour
+          case date.hour
           when 5...9, 17...21
             1
           else
             0
           end
         else
-          case hour
+          case date.hour
           when 14...20
             1
           else
@@ -66,8 +66,8 @@ module Plans
         end
       end
 
-      def rate(date, hour)
-        l = level date, hour
+      def rate(date)
+        l = level date
         case date.month
         when 1..4, 11..12
           case l

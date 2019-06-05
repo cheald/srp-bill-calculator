@@ -5,7 +5,7 @@ module Plans
         20
       end
 
-      def level(date, hour)
+      def level(date)
         return 0 if holiday?(date)
         case date.wday
         when 0, 6
@@ -13,14 +13,14 @@ module Plans
         else
           case date.month
           when 1..4, 11..12
-            case hour
+            case date.hour
             when 5...9, 17...21
               1
             else
               0
             end
           else
-            case hour
+            case date.hour
             when 14...20
               1
             else
@@ -30,8 +30,8 @@ module Plans
         end
       end
 
-      def rate(date, hour)
-        l = level date, hour
+      def rate(date)
+        l = level date
         case date.month
         when 1..4, 11..12
           case l

@@ -81,7 +81,7 @@ module Plans
       @monthly_usage += k
       @total_kwh += kwh
 
-      v = cost datetime, datetime, kwh
+      v = cost datetime, kwh
       @cost_by_hour[h] ||= 0
       @cost_by_hour[h] += v
       @cost_by_month[d.month] ||= 0
@@ -95,7 +95,7 @@ module Plans
       datekey = date.strftime("%Y-%m")
       demand_by_month[datekey] ||= []
 
-      k = [demand_usage(date, date.hour, kwh), 0].max
+      k = [demand_usage(date, kwh), 0].max
       demand_by_month[datekey] << k if k > 0
 
       return k
@@ -116,7 +116,7 @@ module Plans
       # Look at the previous month's data
       d = date - 86400
       demand = demand_for_period(d) || 0
-      demand_charge = demand_cost(demand, d, nil)
+      demand_charge = demand_cost(demand, d)
       @demand_total += demand_charge
       @logger.debug "#{format "%40s", display_name} - #{d.strftime "%Y-%m"} - Cost #{format "$%2.02f", demand_charge} (#{format "%2.1f", demand} kW demand)" if demand_charge > 0
 
@@ -141,11 +141,11 @@ module Plans
       # fourth thursday of November, Thanksgiving
     end
 
-    def demand_usage(date, hour, kwh)
+    def demand_usage(date, kwh)
       0
     end
 
-    def demand_rate(date, hour)
+    def demand_rate(date)
       0
     end
 
@@ -179,20 +179,20 @@ module Plans
       fixed_charges * billing_periods
     end
 
-    def demand_cost(demand, date, hour)
-      # @logger.debug "Logging #{demand} demand at a rate of #{demand_rate(date, hour)}"
+    def demand_cost(demand, date)
+      # @logger.debug "Logging #{demand} demand at a rate of #{demand_rate(date}"
       # exit if demand > 0
-      demand * demand_rate(date, hour)
+      demand * demand_rate(date)
     end
 
     def total_demand_charge
       peak = demand_for_period(@last_date) || 0
-      @demand_total + demand_cost(peak, @last_date, @last_hour)
+      @demand_total + demand_cost(peak, @last_date)
     end
 
-    def cost(date, time, kwh)
+    def cost(date, kwh)
       kwh = kwh
-      rate(date, time.hour) * kwh
+      rate(date) * kwh
     end
 
     def display_name
