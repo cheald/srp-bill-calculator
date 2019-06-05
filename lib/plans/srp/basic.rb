@@ -1,21 +1,23 @@
 module Plans
   module SRP
     class Basic < Base
+      include ::SRP::Dates
+
       def fixed_charges
         20
       end
 
       def level(date)
-        case date.month
-        when 1..4, 11..12
+        case season(date)
+        when :winter
           :off_peak
-        when 5..6, 9..10
+        when :summer
           if monthly_usage <= 2000
             :off_peak
           else
             :on_peak
           end
-        when 7..8
+        when :summer_peak
           if monthly_usage <= 2000
             :off_peak
           else
@@ -28,10 +30,10 @@ module Plans
 
       def rate(date)
         l = level date
-        case date.month
-        when 1..4, 11..12
+        case season(date)
+        when :winter
           0.0782
-        when 5..6, 9..10
+        when :summer
           case l
           when :off_peak
             0.1091
@@ -40,7 +42,7 @@ module Plans
           else
             raise "Bad level"
           end
-        when 7..8
+        when :summer_peak
           case l
           when :off_peak
             0.1157

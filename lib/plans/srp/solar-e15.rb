@@ -2,6 +2,7 @@ module Plans
   module SRP
     class SolarAverage < Plans::SolarBase
       include AverageDemandConcern
+      include ::SRP::Dates
 
       # Only accumulate demand charges for on-peak periods
       def add_demand(date, kwh)
@@ -36,10 +37,10 @@ module Plans
       end
 
       def demand_rate(date)
-        case date.month
-        when 1..4, 11..12
+        case season(date)
+        when :winter
           8.13
-        when 5..6, 9..10
+        when :summer
           19.29
         else
           21.94
@@ -48,8 +49,8 @@ module Plans
 
       def level(date)
         return :off_peak if holiday?(date)
-        case date.month
-        when 1..4, 11..12
+        case season(date)
+        when :winter
           case date.hour
           when 5...9, 17...21
             :on_peak
@@ -68,8 +69,8 @@ module Plans
 
       def rate(date)
         l = level date
-        case date.month
-        when 1..4, 11..12
+        case season(date)
+        when :winter
           case l
           when :off_peak
             0.0370
@@ -78,7 +79,7 @@ module Plans
           else
             raise "Bad level"
           end
-        when 5..6, 9..10
+        when :summer
           case l
           when :off_peak
             0.0360
@@ -87,7 +88,7 @@ module Plans
           else
             raise "Bad level"
           end
-        when 7..8
+        when :summer_peak
           case l
           when :off_peak
             0.0412

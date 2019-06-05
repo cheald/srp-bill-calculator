@@ -2,6 +2,7 @@ require_relative "./base"
 
 module Plans
   module SRP
+    require_relative "srp/dates"
     require_relative "srp/ezthree"
     require_relative "srp/time_of_use"
     require_relative "srp/tou_solar"

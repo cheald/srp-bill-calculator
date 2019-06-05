@@ -1,6 +1,8 @@
 module Plans
   module SRP
     class EZThree < Base
+      include ::SRP::Dates
+
       def fixed_charges
         20
       end
@@ -18,8 +20,8 @@ module Plans
 
       def rate(date)
         l = level date
-        case date.month
-        when 1..4, 11..12
+        case season(date)
+        when :winter
           case l
           when :off_peak
             0.0738
@@ -28,7 +30,7 @@ module Plans
           else
             raise "Bad level"
           end
-        when 5..6, 9..10
+        when :summer
           case l
           when :off_peak
             0.0829
@@ -37,7 +39,7 @@ module Plans
           else
             raise "Bad level"
           end
-        when 7..8
+        when :summer_peak
           case l
           when :off_peak
             0.0853

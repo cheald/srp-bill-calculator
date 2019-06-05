@@ -1,6 +1,8 @@
 module Plans
   module SRP
     class ElectricVehicle < Base
+      include ::SRP::Dates
+
       def notes
         "Only available to customers with a plug-in battery or hybrid vehicle."
       end
@@ -15,9 +17,8 @@ module Plans
 
       def level(date)
         return :off_peak if holiday?(date)
-        case date.month
-        # Winter
-        when 1..4, 11..12
+        case season(date)
+        when :winter
           case date.hour
           when 0...5, 23..24
             :super_off_peak
@@ -40,8 +41,8 @@ module Plans
 
       def rate(date)
         l = level date
-        case date.month
-        when 1..4, 11..12
+        case season(date)
+        when :winter
           case l
           when :super_off_peak
             0.0575
@@ -52,7 +53,7 @@ module Plans
           else
             raise "Bad level"
           end
-        when 5..6, 9..10
+        when :summer
           case l
           when :super_off_peak
             0.0611
@@ -63,7 +64,7 @@ module Plans
           else
             raise "Bad level"
           end
-        when 7..8
+        when :summer_peak
           case l
           when :super_off_peak
             0.0614
