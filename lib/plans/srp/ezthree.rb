@@ -12,7 +12,7 @@ module Plans
           0
         else
           start = @options.fetch(:srp_ez3_start_hour, "15").to_i
-          (start...start+3).cover?(hour) ? 1 : 0
+          (start...start + 3).cover?(hour) ? 1 : 0
         end
       end
 
@@ -22,9 +22,9 @@ module Plans
         when 1..4, 11..12
           case l
           when 0
-            0.0758
+            0.0738
           when 1
-            0.1215
+            0.1063
           else
             raise "Bad level"
           end
@@ -33,7 +33,7 @@ module Plans
           when 0
             0.0829
           when 1
-            0.3022
+            0.2895
           else
             raise "Bad level"
           end
@@ -42,7 +42,7 @@ module Plans
           when 0
             0.0853
           when 1
-            0.3577
+            0.3444
           else
             raise "Bad level"
           end

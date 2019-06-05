@@ -37,7 +37,7 @@ module Plans
             end
           else
             case hour
-            when 13...20
+            when 14...20
               1
             else
               0
@@ -52,9 +52,9 @@ module Plans
         when 1..4, 11..12
           case l
           when 0
-            0.0711
+            0.0691
           when 1
-            0.1020
+            0.0951
           else
             raise "Bad level"
           end
@@ -63,7 +63,7 @@ module Plans
           when 0
             0.0727
           when 1
-            0.1946
+            0.2094
           else
             raise "Bad level"
           end
@@ -72,7 +72,7 @@ module Plans
           when 0
             0.0730
           when 1
-            0.2215
+            0.2409
           else
             raise "Bad level"
           end

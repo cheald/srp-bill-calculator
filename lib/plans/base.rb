@@ -42,7 +42,8 @@ module Plans
       pre_offset = kwh
       @usage_total += kwh
       kwh = offset datetime, datetime, kwh
-      capped_kwh = [@options[:loadcap], kwh].max
+      capped_kwh = [@options[:loadcap], kwh].min
+      kwh = capped_kwh
       @offset_total += (pre_offset - kwh)
 
       @usage_by_month[datekey] ||= 0
@@ -71,8 +72,9 @@ module Plans
       # Look at the previous month's data
       d = date - 86400
       demand = demand_for_period(d) || 0
-      rate = demand_rate(d, nil)
-      @demand_total += demand * rate
+      demand_charge = demand_cost(demand, d, nil)
+      @demand_total += demand_charge
+      @logger.debug "Added #{demand_charge} (#{demand} kW demand)" if demand_charge > 0
       @monthly_usage = reset_monthly_usage
     end
 
@@ -123,9 +125,13 @@ module Plans
       fixed_charges * billing_periods
     end
 
+    def demand_cost(demand, date, hour)
+      demand * demand_rate(date, hour)
+    end
+
     def total_demand_charge
       peak = demand_for_period(@last_date) || 0
-      @demand_total + (peak * demand_rate(@last_date, @last_hour))
+      @demand_total + demand_cost(peak, @last_date, @last_hour)
     end
 
     def cost(date, time, kwh)

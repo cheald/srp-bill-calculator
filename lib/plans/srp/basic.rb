@@ -10,20 +10,16 @@ module Plans
         when 1..4, 11..12
           0
         when 5..6, 9..10
-          if monthly_usage <= 700
+          if monthly_usage <= 2000
             0
-          elsif monthly_usage <= 2000
-            1
           else
-            2
+            1
           end
         when 7..8
-          if monthly_usage <= 700
+          if monthly_usage <= 2000
             0
-          elsif monthly_usage <= 2000
-            1
           else
-            2
+            1
           end
         else
           raise "Bad level"
@@ -34,15 +30,13 @@ module Plans
         l = level date, hour
         case date.month
         when 1..4, 11..12
-          0.083
+          0.0782
         when 5..6, 9..10
           case l
           when 0
             0.1091
           when 1
-            0.1110
-          when 2
-            0.1215
+            0.1134
           else
             raise "Bad level"
           end
@@ -51,9 +45,7 @@ module Plans
           when 0
             0.1157
           when 1
-            0.1169
-          when 2
-            0.1320
+            0.127
           else
             raise "Bad level"
           end

@@ -50,11 +50,21 @@ module Plans
 
       def level(date, hour)
         return 0 if holiday?(date)
-        case date.wday
-        when 0, 6
-          0
+        case date.month
+        when 1..4, 11..12
+          case hour
+          when 5...9, 17...21
+            1
+          else
+            0
+          end
         else
-          (15..18).cover?(hour) ? 1 : 0
+          case hour
+          when 14...20
+            1
+          else
+            0
+          end
         end
       end
 
@@ -64,27 +74,27 @@ module Plans
         when 1..4, 11..12
           case l
           when 0
-            0.0758
+            0.0370
           when 1
-            0.01215
+            0.0410
           else
             raise "Bad level"
           end
         when 5..6, 9..10
           case l
           when 0
-            0.0829
+            0.0360
           when 1
-            0.3022
+            0.0462
           else
             raise "Bad level"
           end
         when 7..8
           case l
           when 0
-            0.0853
+            0.0412
           when 1
-            0.3577
+            0.0622
           else
             raise "Bad level"
           end
