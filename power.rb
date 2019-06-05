@@ -51,7 +51,7 @@ parser = OptionParser.new do |opts|
     options[:efficiency] = v.to_f
   end
 
-  opts.on("-l", "--loadgov gov", "Simulate a load goveroner by capping hourly usage at a given level") do |v|
+  opts.on("-l", "--loadgov gov", "Simulate a load governor by capping hourly usage at a given level") do |v|
     options[:loadcap] = v.to_f
   end
 end
