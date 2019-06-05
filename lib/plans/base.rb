@@ -31,6 +31,7 @@ module Plans
       @readings_by_month ||= {}
       @demand_by_month ||= {}
       @total_kwh ||= 0
+      @net_metered_kwh ||= 0
 
       d = datetime
       h = datetime.hour
@@ -44,6 +45,12 @@ module Plans
       kwh = offset datetime, datetime, kwh
       capped_kwh = [@options[:loadcap], kwh].min
       kwh = capped_kwh
+      # When we have a flat net metering buyback rate, us it.
+      # Otherwise, we just count this as a kWh credit at retail rates
+      if kwh < 0 && net_metering_rate != 0
+        @net_metered_kwh -= kwh
+        kwh = 0
+      end
       @offset_total += (pre_offset - kwh)
 
       @usage_by_month[datekey] ||= 0
@@ -103,8 +110,16 @@ module Plans
       0
     end
 
+    def net_metering_rate
+      0
+    end
+
+    def net_metered_rebate
+      @net_metered_kwh * net_metering_rate
+    end
+
     def total
-      usage_total + total_demand_charge + total_fixed_charges
+      usage_total + total_demand_charge + total_fixed_charges - net_metered_rebate
     end
 
     def usage_total

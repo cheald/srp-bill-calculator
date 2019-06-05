@@ -22,7 +22,7 @@ module Plans
           when 0...5, 23..24
             0
           when 5...9, 17...21
-            date.wday == 0 || date.wday == 6 ? 1 : 2
+            (date.wday == 0 || date.wday == 6) ? 1 : 2
           else
             1
           end

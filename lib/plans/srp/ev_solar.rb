@@ -47,6 +47,10 @@ module Plans
         end
       end
 
+      def net_metering_rate
+        0.0281
+      end
+
       def rate(date, hour)
         l = level date, hour
         case date.month

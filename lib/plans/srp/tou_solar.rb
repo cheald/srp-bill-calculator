@@ -21,6 +21,10 @@ module Plans
         0
       end
 
+      def net_metering_rate
+        0.0281
+      end
+
       def level(date, hour)
         return 0 if holiday?(date)
         case date.wday
