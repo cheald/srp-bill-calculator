@@ -43,6 +43,44 @@ module Plans
     end
 
     def offset(date, time, kwh)
+      if @options[:pvwatts]
+        offset_pvwatts(date, time, kwh)
+      else
+        offset_estimate(date, time, kwh)
+      end
+    end
+
+    def offset_pvwatts(date, time, kwh)
+      key = date.strftime("%-m-%-d-%-H")
+      size, data = pvwatts_data
+      x = data[key] / size * @options[:offset]
+      kwh - x
+    end
+
+    def pvwatts_data
+      @pvwatts_data ||= begin
+        f = File.read(@options[:pvwatts])
+        lines = []
+        found = false
+        size = 0
+        f.lines.each do |l|
+          if m = l.match(/DC System Size.*([\d.]+)/)
+            size = m[1].to_f * 1000.0
+          end
+          found = true if l.match(/^"Month/)
+          lines << l if found && !l.match(/^"Totals/)
+        end
+
+        data = {}
+        CSV.parse(lines.join, headers: true).each do |row|
+          data["%d-%d-%d" % [row["Month"], row["Day"], row["Hour"]]] = row["AC System Output (W)"].to_f
+        end
+
+        [size, data]
+      end
+    end
+
+    def offset_estimate(date, time, kwh)
       offset = 0
       system_size = @options.fetch(:offset, 0).to_f
 

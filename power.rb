@@ -58,6 +58,10 @@ parser = OptionParser.new do |opts|
   opts.on("-x", "--extended", "Show extended breakout tables") do |v|
     options[:extended] = v
   end
+
+  opts.on("-s", "--schedule file", "PVWatts Hourly Generation Schedule CSV") do |v|
+    options[:pvwatts] = v
+  end
 end
 
 begin
