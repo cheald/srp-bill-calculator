@@ -10,7 +10,7 @@ end
 
 logger = Logger.new $stderr
 # default lat/long are for Phoenix in general
-options = { provider: "srp", lat: 33.448376, long: -112.074036, cpw: 3.52, efficiency: 0.78, loadcap: 9999 }
+options = { provider: "srp", lat: 33.448376, long: -112.074036, cpw: 3.52, efficiency: 1.0, loadcap: 9999 }
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
@@ -53,6 +53,10 @@ parser = OptionParser.new do |opts|
 
   opts.on("-l", "--loadgov gov", "Simulate a load governor by capping hourly usage at a given level") do |v|
     options[:loadcap] = v.to_f
+  end
+
+  opts.on("-x", "--extended", "Show extended breakout tables") do |v|
+    options[:extended] = v
   end
 end
 
@@ -114,6 +118,7 @@ CSV.open(options[:csv], headers: true) do |csv|
 end
 
 sorted = plans.sort_by(&:total)
+all = sorted.dup
 best = sorted.shift
 worst = sorted.pop
 
@@ -133,3 +138,7 @@ sorted.each do |plan|
 end
 puts colorize_string worst, 31 if worst
 puts ""
+
+sorted.each do |plan|
+  plan.extra_notes
+end if options[:extended]

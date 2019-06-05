@@ -13,9 +13,16 @@ module Plans
       @total = 0
       @demand_schedule = demand_schedule
       @options = options
+      @months = 0
+      @hours = 0
+      @cost_by_hour = {}
+      @cost_by_month = {}
+      @gen_by_month = {}
+      @gen_by_hour = {}
     end
 
     def add(datetime, kwh)
+      @hours += 1
       @demand_total ||= 0
       @monthly_usage ||= 0
       @usage_total ||= 0
@@ -38,7 +45,12 @@ module Plans
       capped_kwh = [@options[:loadcap], kwh].min
       kwh = capped_kwh
 
-      @offset_total += (pre_offset - kwh)
+      gen_kwh = (pre_offset - kwh)
+      @offset_total += gen_kwh
+      @gen_by_month[d.month] ||= 0
+      @gen_by_month[d.month] += gen_kwh
+      @gen_by_hour[h] ||= 0
+      @gen_by_hour[h] += gen_kwh
       @excess_gen -= kwh if kwh < 0
 
       # @logger.debug "pre_offset: #{pre_offset}, kwh: #{kwh}"
@@ -70,6 +82,10 @@ module Plans
       @total_kwh += kwh
 
       v = cost datetime, datetime, kwh
+      @cost_by_hour[h] ||= 0
+      @cost_by_hour[h] += v
+      @cost_by_month[d.month] ||= 0
+      @cost_by_month[d.month] += v
       # @logger.debug format("%25s %15s %-15s %2.2f kWh costs $%2.2f", self.class.to_s, date, hour, kwh, v)
       @total += v
       # @logger.debug "Total is #{@total}"
@@ -102,9 +118,10 @@ module Plans
       demand = demand_for_period(d) || 0
       demand_charge = demand_cost(demand, d, nil)
       @demand_total += demand_charge
-      # @logger.debug "Date: #{d.inspect} - Added #{demand_charge} (#{demand} kW demand)" if demand_charge > 0
+      @logger.debug "#{format "%40s", display_name} - #{d.strftime "%Y-%m"} - Cost #{format "$%2.02f", demand_charge} (#{format "%2.1f", demand} kW demand)" if demand_charge > 0
 
       @monthly_usage = reset_monthly_usage
+      @months += 1
     end
 
     def reset_monthly_usage
@@ -190,18 +207,56 @@ module Plans
     end
 
     def self.print_header
-      puts colorize_string(format("%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%-8s\t%-8s",
+      puts colorize_string(format("%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%6s\t%-8s\t%-8s\t%-8s\t%-8s",
                                   "Plan Name",
                                   "Total",
+                                  "Avg/Day",
                                   "Energy",
                                   "Demand",
                                   "Fees",
                                   "Usage (kWh)",
                                   "Gen (kWh)",
+                                  "Gen/Day (kWh)",
                                   "Excess (kWh)",
                                   "Demand (kW) avg ± stddev",
                                   "Notes"), 94)
       puts "-" * 200
+    end
+
+    def extra_notes
+      # return
+      if @gen_by_month.values.any? { |v| v > 0 }
+        puts "-" * 120
+        puts display_name
+
+        print "\t\t\t"
+        puts (1..12).map { |i| colorize_string format("%-8s", Date::ABBR_MONTHNAMES[i]), 90 }.join("\t")
+        ms = @gen_by_month.keys.sort.map do |k|
+          "#{format "%-6.1fkw", @gen_by_month[k]}"
+        end
+        print colorize_string "Generation by month:\t", 90
+        puts "#{ms.join("\t")}"
+
+        mcs = @cost_by_month.keys.sort.map do |k|
+          "#{format "$%-8.02f", @cost_by_month[k]}"
+        end
+        print colorize_string "Cost by month:\t\t", 90
+        puts "#{mcs.join("\t")}"
+
+        puts ""
+        print "\t\t\t"
+        puts (0..23).map { |i| colorize_string format("%-5s", i), 90 }.join("\t")
+        hs = @gen_by_hour.keys.sort.map do |k|
+          "#{format "%-5.1f", @gen_by_hour[k]}"
+        end
+        puts "Generation by hour:\t#{hs.join("\t")}"
+
+        hcs = @cost_by_hour.keys.sort.map do |k|
+          "#{format "$%-5.02f", @cost_by_hour[k]}"
+        end
+        puts "Cost by hour:\t\t#{hcs.join("\t")}"
+        puts ""
+      end
     end
 
     def to_s
@@ -211,14 +266,16 @@ module Plans
         demand_avg = demand_sum / @demands.length.to_f
         demand_stddev = @demands.map { |d| d - demand_avg }.map { |d| d * d }.inject(&:+) / @demands.length.to_f
       end
-      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s",
+      format "%-30s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s\t%8s",
         display_name,
         format("$%2.2f", total),
+        format("$%2.2f", total / (@hours.to_f / 24.0)),
         format("$%2.2f", usage_total),
         format("$%2.2f", total_demand_charge),
         format("$%2.2f", total_fixed_charges),
         format("%2.1f", @usage_total),
         format("%2.1f", @offset_total),
+        format("%2.1f", @offset_total / (@hours.to_f / 24.0)),
         format("%2.1f", @excess_gen),
         demand_avg > 0 ? format("%4.1f ± %-4.1f", demand_avg, demand_stddev) : "",
         colorize_string(notes, 37)
