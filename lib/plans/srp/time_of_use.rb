@@ -8,28 +8,7 @@ module Plans
       end
 
       def level(date)
-        return :off_peak if holiday?(date)
-        case date.wday
-        when 0, 6
-          :off_peak
-        else
-          case season(date)
-          when :winter
-            case date.hour
-            when 5...9, 17...21
-              :on_peak
-            else
-              :off_peak
-            end
-          else
-            case date.hour
-            when 14...20
-              :on_peak
-            else
-              :off_peak
-            end
-          end
-        end
+        standard_level date
       end
 
       def rate(date)
