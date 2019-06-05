@@ -25,9 +25,9 @@ module Plans
           demand_for_period(date)
         else
           # SRP demand charges are based on half-hour demand. We only have kWh to work with.
-          # We'll estimate the half-hour peak charge as 70% of the total usage of the hour.
+          # We'll estimate the half-hour peak charge as 75% of the total usage of the hour.
           # This likely undershoots a bit.
-          kwh * 0.7
+          kwh * 0.75
         end
       end
 

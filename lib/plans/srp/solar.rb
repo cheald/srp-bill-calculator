@@ -97,9 +97,9 @@ module Plans
         when 5..6, 9..10
           case l
           when 0
-            0.0463
-          when 1
             0.0360
+          when 1
+            0.0462
           else
             raise "Bad level"
           end
