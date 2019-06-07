@@ -12,6 +12,10 @@ module SRP
       (11..12).cover?(date.month)
     end
 
+    def weekend?(date)
+      date.wday == 0 || date.wday == 6
+    end
+
     def summer?(date)
       (5..6).cover?(date.month) || (9..10).cover?(date.month)
     end
@@ -47,13 +51,14 @@ module SRP
 
     def super_offpeak_level(date)
       return :off_peak if holiday?(date)
+
       case season(date)
       when :winter
         case date.hour
         when 0...5, 23..24
           :super_off_peak
         when 5...9, 17...21
-          (date.wday == 0 || date.wday == 6) ? :off_peak : :on_peak
+          weekend?(date) ? :off_peak : :on_peak
         else
           :off_peak
         end
@@ -62,7 +67,7 @@ module SRP
         when 0...5, 23..24
           :super_off_peak
         when 14...20
-          :on_peak
+          weekend?(date) ? :off_peak : :on_peak
         else
           :off_peak
         end
