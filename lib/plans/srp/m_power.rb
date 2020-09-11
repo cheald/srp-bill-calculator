@@ -4,7 +4,7 @@ module Plans
       include ::SRP::Dates
       # I _think_ that MPower doesn't assess a separate service charge. I'd like to double check this.
       def fixed_charges
-        0
+        20.0
       end
 
       def rate(date)
