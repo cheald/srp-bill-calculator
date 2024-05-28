@@ -10,11 +10,13 @@ module Plans
       def rate(date)
         case season(date)
         when :winter
-          0.0782
+          0.0976
         when :summer
-          0.1114
+          0.1290
+        when :summer_peak
+          0.1361
         else
-          0.1185
+          raise "bad rate"
         end
       end
     end

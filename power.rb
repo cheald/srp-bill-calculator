@@ -62,6 +62,10 @@ parser = OptionParser.new do |opts|
   opts.on("-s", "--schedule file", "PVWatts Hourly Generation Schedule CSV") do |v|
     options[:pvwatts] = v
   end
+
+  opts.on("--exclude-solar-plans", "Exclude Solar Plans") do |v|
+    options[:exclude_solar_plans] = true
+  end
 end
 
 begin
@@ -105,8 +109,10 @@ if options[:demand_schedule]
   end
 end
 
-plans = root::PLANS.select { |c| !options[:offset] || c.solar_eligible }.map { |c| c.new(logger, demand_schedule, options) }
-plans = root::PLANS.map { |c| c.new(logger, demand_schedule, options) }
+applicable_plans = root::PLANS.reject{|c| c.solar_eligible if options[:exclude_solar_plans]}
+
+plans = applicable_plans.select { |c| !options[:offset] || c.solar_eligible }.map { |c| c.new(logger, demand_schedule, options) }
+plans = applicable_plans.map { |c| c.new(logger, demand_schedule, options) }
 
 CSV.open(options[:csv], headers: true) do |csv|
   arr = csv.to_a
