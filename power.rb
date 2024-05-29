@@ -112,7 +112,6 @@ end
 applicable_plans = root::PLANS.reject{|c| c.solar_eligible if options[:exclude_solar_plans]}
 
 plans = applicable_plans.select { |c| !options[:offset] || c.solar_eligible }.map { |c| c.new(logger, demand_schedule, options) }
-plans = applicable_plans.map { |c| c.new(logger, demand_schedule, options) }
 
 CSV.open(options[:csv], headers: true) do |csv|
   arr = csv.to_a
